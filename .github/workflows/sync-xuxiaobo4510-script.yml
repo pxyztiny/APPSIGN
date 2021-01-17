@@ -1,4 +1,4 @@
-name: sync-ZhiYi-N-script
+name: sync-xuxiaobo4510-script
 on:
   schedule:
     - cron: '0 */4 * * *'
@@ -22,7 +22,7 @@ jobs:
         uses: repo-sync/github-sync@v2
         if: env.PAT
         with:
-          source_repo: "https://github.com/ZhiYi-N/script.git"
+          source_repo: "https://github.com/xuxiaobo4510/APPSIGN.git"
           source_branch: "master"
           destination_branch: "main"
           github_token: ${{ secrets.PAT }}
