@@ -3,7 +3,7 @@ name: QQ阅读APP
 on:
   workflow_dispatch:
   schedule:
-    - cron: "* */10 * * *"
+    - cron: "*/20 23,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14 * * *"
   watch:
     types: [started]
 
@@ -22,10 +22,10 @@ jobs:
           npm install
       - name: "运行【QQ阅读】"
         run: |
-          node qqreadapp.js
+          node QQreadAPP.js
         env:
-          QQREAD_COOKIE: ${{ secrets.QQREAD_COOKIE }}
-          QQREADER_COOKIE: ${{ secrets.QQREADER_COOKIE }}
+          QQREADAPP_HEADER: ${{ secrets.QQREADAPP_HEADER }}
+          QQREADAPP_VIDEOHD: ${{ secrets.QQREADAPP_VIDEOHD }}
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
           BARK_PUSH: ${{ secrets.BARK_PUSH }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
