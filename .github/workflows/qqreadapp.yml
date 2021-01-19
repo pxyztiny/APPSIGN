@@ -22,7 +22,7 @@ jobs:
           npm install
       - name: "运行【QQ阅读】"
         run: |
-          node QQreadAPP.js
+          node qqreadapp.js
         env:
           QQREADAPP_HEADER: ${{ secrets.QQREADAPP_HEADER }}
           QQREADAPP_VIDEOHD: ${{ secrets.QQREADAPP_VIDEOHD }}
