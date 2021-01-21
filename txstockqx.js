@@ -44,7 +44,7 @@ const notifyInterval = 1; //0为关闭通知，1为所有通知,默认为0
 let rndtime = Math.round(new Date().getTime()) //毫秒
 let signday = formatDateTime(new Date());
 let tz = '';
-var cash = $.getval('cash') || 0; //0为不自动提现,1为自动提现1元,5为自动提现1元,
+var cash = $.getval('cash') || 1; //0为不自动提现,1为自动提现1元,5为自动提现1元,
 
 const userheaderArr = [];
 let userheaderVal = "";
