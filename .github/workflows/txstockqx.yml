@@ -1,0 +1,32 @@
+name: 腾讯自选股
+
+on:
+    workflow_dispatch:
+    schedule:
+        - cron: "30 23 * * *"
+    watch:
+        types: [started]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        if: github.event.repository.owner.id == github.event.sender.id
+        steps:
+            - uses: actions/checkout@v1
+            - name: Use Node.js 10.x
+              uses: actions/setup-node@v1
+              with:
+                  node-version: 10.x
+            - name: npm install
+              run: |
+                  npm install
+            - name: "运行【步步宝】"
+              run: |
+                  node txstockqx.js
+              env:
+                  USERHEADER: ${{ secrets.USERHEADER }}
+                  USERKEY: ${{ secrets.USERKEY }}
+                  SINGHEADER: ${{ secrets.SINGHEADER }}
+                  SINGKEY: ${{ secrets.SINGKEY }}
+                  TASKHEADER: ${{ secrets.TASKHEADER }}
+                  TASKKEY: ${{ secrets.TASKKEY }}
