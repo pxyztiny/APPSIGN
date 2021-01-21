@@ -3,7 +3,7 @@ name: 无忧行签到
 on:
   push:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0,1 * * *'
 
 jobs:
   autosign:
