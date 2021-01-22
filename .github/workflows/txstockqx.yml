@@ -20,7 +20,7 @@ jobs:
             - name: npm install
               run: |
                   npm install
-            - name: "运行【步步宝】"
+            - name: "运行【腾讯自选股】"
               run: |
                   node txstockqx.js
               env:
