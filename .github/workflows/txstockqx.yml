@@ -30,4 +30,4 @@ jobs:
                   SINGKEY: ${{ secrets.SINGKEY }}
                   TASKHEADER: ${{ secrets.TASKHEADER }}
                   TASKKEY: ${{ secrets.TASKKEY }}
-                  WXTASKKEY: ${{ secrets.WXTASKKEY }}:  
+                  WXTASKKEY: ${{ secrets.WXTASKKEY }}
