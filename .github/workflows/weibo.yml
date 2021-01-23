@@ -3,7 +3,7 @@ name: 微博每日签到打卡
 on:
   workflow_dispatch:
   schedule:
-     - cron: '5 0 * * *'
+     - cron: '5 18 * * *'
   watch:
     types: started
 jobs:
@@ -15,8 +15,7 @@ jobs:
         WB_PAY: ${{ secrets.WB_PAY }}
     steps:
       - name: Checkout
-        run: |
-          git clone https://github.com/xuxiaobo4510/APPSIGN.git ~/Scripts
+        uses: actions/checkout@v2
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
@@ -28,7 +27,7 @@ jobs:
       - name: '运行 【新浪微博】'
         if: env.WB_TOKEN
         run: |
-            node weibo.js
+          node weibo.js
         env:
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
           BARK_PUSH: ${{ secrets.BARK_PUSH }}
