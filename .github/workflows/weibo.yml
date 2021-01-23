@@ -30,7 +30,7 @@ jobs:
         if: env.WB_TOKEN
         run: |
           cd ~/Scripts
-          node Task/weibo.js
+          node weibo.js
         env:
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
           BARK_PUSH: ${{ secrets.BARK_PUSH }}
