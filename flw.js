@@ -105,7 +105,7 @@ const nowTimes = new Date(
 if ($.isNode()) {
  CASH = process.env.FL_CASH || 1;
 } 
-if ($.isNode() && process.env.FL_flwURL) {
+if ($.isNode() && process.env.FL_FLWURL) {
   COOKIES_SPLIT = process.env.COOKIES_SPLIT || "\n";
   console.log(
     `============ cookies分隔符为：${JSON.stringify(
@@ -113,36 +113,36 @@ if ($.isNode() && process.env.FL_flwURL) {
     )} =============\n`
   );
   if (
-    process.env.FL_flwURL &&
-    process.env.FL_flwURL.indexOf(COOKIES_SPLIT) > -1
+    process.env.FL_FLWURL &&
+    process.env.FL_FLWURL.indexOf(COOKIES_SPLIT) > -1
   ) {
-    middleflwURL = process.env.FL_flwURL.split(COOKIES_SPLIT);
+    middleflwURL = process.env.FL_FLWURL.split(COOKIES_SPLIT);
   } else {
-    middleflwURL = process.env.FL_flwURL.split();
+    middleflwURL = process.env.FL_FLWURL.split();
   } 
   if (
-    process.env.FL_flwHEADER &&
-    process.env.FL_flwHEADER.indexOf(COOKIES_SPLIT) > -1
+    process.env.FL_FLWHEADER &&
+    process.env.FL_FLWHEADER.indexOf(COOKIES_SPLIT) > -1
   ) {
-    middleflwHEADER = process.env.FL_flwHEADER.split(COOKIES_SPLIT);
+    middleflwHEADER = process.env.FL_FLWHEADER.split(COOKIES_SPLIT);
   } else {
-    middleflwHEADER = process.env.FL_flwHEADER.split();
+    middleflwHEADER = process.env.FL_FLWHEADER.split();
   } 
   if (
-    process.env.FL_flwspBODY &&
-    process.env.FL_flwspBODY.indexOf(COOKIES_SPLIT) > -1
+    process.env.FL_FLWSPBODY &&
+    process.env.FL_FLWSPBODY.indexOf(COOKIES_SPLIT) > -1
   ) {
-    middleflwspBODY = process.env.FL_flwspBODY.split(COOKIES_SPLIT);
+    middleflwspBODY = process.env.FL_FLWSPBODY.split(COOKIES_SPLIT);
   } else {
-    middleflwspBODY = process.env.FL_flwspBODY.split();
+    middleflwspBODY = process.env.FL_FLWSPBODY.split();
   } 
   if (
-    process.env.FL_flwqwBODY &&
-    process.env.FL_flwqwBODY.indexOf(COOKIES_SPLIT) > -1
+    process.env.FL_FLWQWBODY &&
+    process.env.FL_FLWQWBODY.indexOf(COOKIES_SPLIT) > -1
   ) {
-    middleflwqwBODY = process.env.FL_flwqwBODY.split(COOKIES_SPLIT);
+    middleflwqwBODY = process.env.FL_FLWQWBODY.split(COOKIES_SPLIT);
   } else {
-    middleflwqwBODY = process.env.FL_flwqwBODY.split();
+    middleflwqwBODY = process.env.FL_FLWQWBODY.split();
   } 
 }
 if (COOKIE.flwURL) {
