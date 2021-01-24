@@ -30,12 +30,10 @@ jobs:
       - name: npm install
         if: env.FL_flwURL
         run: |
-          cd ~/APPSIGN
           npm install
       - name: '运行 【返利网】'
         if: env.FL_flwURL
         run: |
-          cd ~/APPSIGN
           node flw.js
         env:
           
