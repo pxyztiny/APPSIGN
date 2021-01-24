@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     env:
-        FL_flwURL: ${{ secrets.FL_flwURL }}
-        FL_flwHEADER: ${{ secrets.FL_flwHEADER }}		
-        FL_flwspBODY: ${{ secrets.FL_flwspBODY }}	
-        FL_flwqwBODY: ${{ secrets.FL_flwqwBODY }}        
+        FL_FLWURL: ${{ secrets.FL_FLWURL }}
+        FL_FLWHEADER: ${{ secrets.FL_FLWHEADER }}		
+        FL_FLWSPBODY: ${{ secrets.FL_FLWSPBODY }}	
+        FL_FLWQWBODY: ${{ secrets.FL_FLWQWBODY }}        
         FL_CASH: ${{ secrets.FL_CASH }}
     steps:
       - name: Checkout
@@ -28,11 +28,11 @@ jobs:
         with:
           node-version: 12.x
       - name: npm install
-        if: env.FL_flwURL
+        if: env.FL_FLWURL
         run: |
           npm install
       - name: '运行 【返利网】'
-        if: env.FL_flwURL
+        if: env.FL_FLWURL
         run: |
           node flw.js
         env:
