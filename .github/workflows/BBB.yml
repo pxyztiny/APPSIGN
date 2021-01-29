@@ -3,7 +3,7 @@ name: 步步宝
 on:
     workflow_dispatch:
     schedule:
-        - cron: "0 22,0,2,4,6,8,10,12,14 * * *"
+        - cron: "0 22,0,2-14 * * *"
     watch:
         types: [started]
 
@@ -25,3 +25,4 @@ jobs:
                   node BBB.js
               env:
                   BBBCK: ${{ secrets.BBBCK }}
+                  PUSH_KEY: ${{ secrets.PUSH_KEY }}
