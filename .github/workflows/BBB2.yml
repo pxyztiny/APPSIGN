@@ -1,4 +1,4 @@
-name: 步步宝
+name: 步步宝2
 
 on:
     workflow_dispatch:
@@ -20,9 +20,9 @@ jobs:
             - name: npm install
               run: |
                   npm install
-            - name: "运行【步步宝】"
+            - name: "运行【步步宝2】"
               run: |
-                  node BBB2.js
+                  node BBB.js
               env:
                   BBBCK: ${{ secrets.BBBCK2 }}
                   PUSH_KEY: ${{ secrets.PUSH_KEY }}
