@@ -20,7 +20,7 @@ jobs:
             - name: npm install
               run: |
                   npm install
-            - name: "运行【步步宝】"
+            - name: "运行【步步宝1】"
               run: |
                   node BBB1.js
               env:
