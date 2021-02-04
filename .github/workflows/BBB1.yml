@@ -22,7 +22,7 @@ jobs:
                   npm install
             - name: "运行【步步宝1】"
               run: |
-                  node BBB1.js
+                  node BBB.js
               env:
                   BBBCK: ${{ secrets.BBBCK1 }}
                   PUSH_KEY: ${{ secrets.PUSH_KEY }}
