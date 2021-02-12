@@ -1,0 +1,31 @@
+name: 多看点1
+
+on:
+  workflow_dispatch:
+  schedule:
+     - cron: '5 1,8,13 * * *'
+  watch:
+    types: started
+  repository_dispatch:
+    types: dkd
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.repository.owner.id == github.event.sender.id
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: npm install
+        run: |
+          npm install
+      - name: '运行 【dkd】'
+        run: |
+          node duokandian.js
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_USER_ID: ${{ secrets.TG_USER_ID }}
