@@ -1,9 +1,9 @@
-name: 多看点1
+name: 多看点
 
 on:
   workflow_dispatch:
   schedule:
-     - cron: '5 1,8,13 * * *'
+     - cron: '5 */3 * * *'
   watch:
     types: started
   repository_dispatch:
