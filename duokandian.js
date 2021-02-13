@@ -74,7 +74,7 @@ duokandianheaderVal = {
 };
 if ($.isNode()) {
     // 没有设置 DKD_duokandianCASH 则默认为 0 不提现
-    CASH = process.env.DKD_duokandianCASH || 0.5;
+    CASH = process.env.DKD_duokandianCASH || 0;
 }
 if ($.isNode() && process.env.DKD_duokandianHEADER) {
     COOKIES_SPLIT = process.env.COOKIES_SPLIT || "\n";
@@ -326,10 +326,6 @@ async function all() {
             await rw2(); //日常任务2
         }
         await txcx(); //提现查询
-
-        if (CASH == 0.5 && $.user.data && $.user.data.cash >= 0.5 && txtx >= 5) {
-            await tx(); //提现
-        }
         if (CASH == 1 && $.user.data && $.user.data.cash >= 1 && txtx >= 5) {
             await tx(); //提现
         }
