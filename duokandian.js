@@ -326,6 +326,10 @@ async function all() {
             await rw2(); //日常任务2
         }
         await txcx(); //提现查询
+
+        if (CASH == 0.5 && $.user.data && $.user.data.cash >= 0.5 && txtx >= 5) {
+            await tx(); //提现
+        }
         if (CASH == 1 && $.user.data && $.user.data.cash >= 1 && txtx >= 5) {
             await tx(); //提现
         }
