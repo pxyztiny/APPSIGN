@@ -14,6 +14,7 @@ boxjs链接  https://raw.githubusercontent.com/ziye12/JavaScript/main/Task/ziye.
 2.11 完善判定
 2.11-2  修复视频和广告以及提现判定问题
 2.12 增加碎片显示以及兑换
+2.14 修复宝箱问题
 
 ⚠️一共1个位置 1个ck  👉 2条 Secrets
 多账号换行
@@ -306,6 +307,7 @@ async function all() {
                 await timeaward(); //时段奖励
                 await timeawardsss(); //时段翻倍
             }
+            await extrabox(); //宝箱刷新
             await boxaward(); //宝箱奖励
             await boxbox(); //宝箱翻倍
         }
@@ -768,6 +770,41 @@ function timeawardsss(timeout = 0) {
         }, timeout)
     })
 }
+
+//宝箱刷新
+function extrabox(timeout = 0) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            let url = {
+                url: `http://dkd-api.dysdk.com/red/box_init`,
+                headers: duokandianheaderVal,
+                body: duokandianbodyVal,
+            }
+            $.post(url, async (err, resp, data) => {
+                try {
+                    if (logs) $.log(`${O}, 时段刷新🚩: ${data}`);
+                    $.extrabox = JSON.parse(data);
+                    if ($.extrabox.status_code == 200) {
+                        console.log(`【宝箱刷新】：刷新成功,剩余${$.extrabox.data.diff}秒\n`);
+                        $.message += `【宝箱刷新】：刷新成功,剩余${$.extrabox.data.diff}秒\n`;
+                    }
+                    if ($.extrabox.status_code == 10020) {
+                        console.log(`【宝箱刷新】：${$.extrabox.message}\n`);
+                        $.message += `【宝箱刷新】：${$.extrabox.message}\n`;
+                    }
+                } catch (e) {
+                    $.logErr(e, resp);
+                } finally {
+                    resolve()
+                }
+            })
+        }, timeout)
+    })
+}
+
+
+
+
 //宝箱奖励
 function boxaward(timeout = 0) {
     return new Promise((resolve) => {
