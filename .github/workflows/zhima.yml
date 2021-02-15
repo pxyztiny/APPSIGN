@@ -1,39 +1,43 @@
-name: 芝麻视频
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: 芝嫲视频
 
 on:
   workflow_dispatch:
   schedule:
-     - cron: '0,30 * * * *'
+    - cron: '0,30 * * * *' # UTC时间 +8 北京
   watch:
     types: started
   repository_dispatch:
-    types: zhima
-    
+    types: started
 jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Use Node.js 12.x
+        run: |
+          git clone https://github.com/ziye12/JavaScript.git ~/JavaScript
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: ${{ matrix.node-version }}
+      - name: Cache node_modules
+        uses: actions/cache@v2 # 使用 GitHub 官方的缓存 Action。
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }} # 使用 package-lock.json 的 Hash 作为缓存的 key。也可以使用 package.json 代替
       - name: npm install
         run: |
+          git checkout main
           npm install
-      - name: '运行 【芝麻视频】'
+      - name: '运行 【芝嫲视频】'
         run: |
           node zhima.js
         env:
-          
-          PUSH_KEY: ${{ secrets.PUSH_KEY }}
+          TZ: Asia/shanghai
           BARK_PUSH: ${{ secrets.BARK_PUSH }}
-          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
-          TG_USER_ID: ${{ secrets.TG_USER_ID }}
-          BARK_SOUND: ${{ secrets.BARK_SOUND }}
-          DD_BOT_TOKEN: ${{ secrets.DD_BOT_TOKEN }}
-          DD_BOT_SECRET: ${{ secrets.DD_BOT_SECRET }}
-
-    
+          ZM_zhimabody: ${{ secrets.ZM_zhimabody }}
