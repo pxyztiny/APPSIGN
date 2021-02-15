@@ -15,15 +15,10 @@ hostname = ranlv.lvfacn.com
 #圈x 
 [rewrite local]
 https://ranlv.lvfacn.com/api.php/Common/pvlog url script-request-header https://raw.githubusercontent.com/ZhiYi-N/Private-Script/master/Scripts/ranlv.js
-
-
 #loon
 http-request https://ranlv.lvfacn.com/api.php/Common/pvlog script-path=https://raw.githubusercontent.com/ZhiYi-N/Private-Script/master/Scripts/ranlv.js, requires-body=true, timeout=10, tag=燃旅视频
-
-
 #surge
 燃旅视频 = type=http-request,pattern=^https://ranlv.lvfacn.com/api.php/Common/pvlog,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/ZhiYi-N/Private-Script/master/Scripts/ranlv.js,script-update-interval=0
-
 */
 const zhiyi = '燃旅视频'
 const $ = Env(zhiyi)
@@ -34,8 +29,8 @@ const rlurlArr = [], rlheaderArr = [],rlbodyArr = []
 let rlurl = $.getdata('rlurl')
 let rlheader = $.getdata('rlheader')
 let rlbody = $.getdata('rlbody')
-let tz = ($.getval('tz') || '0');//0关闭通知，1默认开启
-const invite=1;//新用户自动邀请，0关闭，1默认开启
+let tz = ($.getval('tz') || '1');//0关闭通知，1默认开启
+const invite=0;//新用户自动邀请，0关闭，1默认开启
 const logs =0;//0为关闭日志，1为开启
 var hour=''
 var minute=''
@@ -73,7 +68,7 @@ if ($.isNode()) {
   } else {
    rlheader = process.env.RLHEADER.split()
   };
-  if (process.env.RLBODY && process.env.RLBODY.indexOf('#') > -1) {
+/*  if (process.env.RLBODY && process.env.RLBODY.indexOf('#') > -1) {
    rlbody = process.env.RLBODY.split('#');
    console.log(`您选择的是用"#"隔开\n`)
   }
@@ -82,7 +77,24 @@ if ($.isNode()) {
    console.log(`您选择的是用换行隔开\n`)
   } else {
    rlbody = process.env.RLBODY.split()
-  };
+  };*/
+	
+   Object.keys(rlurl).forEach((item) => {
+        if (rlurl[item]) {
+          rlurlArr.push(rlurl[item])
+        }
+    });
+    Object.keys(rlheader).forEach((item) => {
+        if (rlheader[item]) {
+          rlheaderArr.push(rlheader[item])
+        }
+    });  	
+/*    Object.keys(rlbody).forEach((item) => {
+        if (rlbody[item]) {
+          rlbodyArr.push(rlbody[item])
+        }
+    });  */
+	
     console.log(`============ 脚本执行-国际标准时间(UTC)：${new Date().toLocaleString()}  =============\n`)
     console.log(`============ 脚本执行-北京时间(UTC+8)：${new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toLocaleString()}  =============\n`)
  } else {
@@ -97,7 +109,7 @@ if ($.isNode()) {
   }
 }
 !(async () => {
-if (!rlheaderArr[0] && !rlbodyArr[0] && !rlurlArr[0]) {
+if (!rlheaderArr[0]) {
     $.msg($.name, '【提示】请先获取燃旅视频一cookie')
     return;
   }
@@ -108,7 +120,7 @@ if (!rlheaderArr[0] && !rlbodyArr[0] && !rlurlArr[0]) {
       note =''
       rlurl = rlurlArr[i];
       rlheader = rlheaderArr[i];
-      rlbody = rlbodyArr[i];
+     // rlbody = rlbodyArr[i];
       $.index = i + 1;
       console.log(`\n开始【燃旅视频${$.index}】`)
       await checkVersion()
@@ -542,7 +554,7 @@ async function showmsg(){
 if(tz==1){
     $.log(message+note)
     if ($.isNode()){
-    if ((hour == 12 && minute <= 20) || (hour == 23 && minute >= 40)) {
+    if ((hour == 12 && minute <= 20) || (hour == 21 && minute >= 40)) {
        await notify.sendNotify($.name,message+note)
      }
    }else{
