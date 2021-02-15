@@ -34,7 +34,7 @@ const rlurlArr = [], rlheaderArr = [],rlbodyArr = []
 let rlurl = $.getdata('rlurl')
 let rlheader = $.getdata('rlheader')
 let rlbody = $.getdata('rlbody')
-let tz = ($.getval('tz') || '1');//0关闭通知，1默认开启
+let tz = ($.getval('tz') || '0');//0关闭通知，1默认开启
 const invite=1;//新用户自动邀请，0关闭，1默认开启
 const logs =0;//0为关闭日志，1为开启
 var hour=''
