@@ -18,7 +18,7 @@ jobs:
     steps:
       - name: Checkout
         run: |
-          git clone https://github.com/xuxiaobo4510/APPSIGN.git ~/JavaScript
+          git clone https://github.com/ziye12/JavaScript.git ~/JavaScript
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1
         with:
@@ -32,12 +32,12 @@ jobs:
           key: ${{ runner.os }}-${{ env.cache-name }}-${{ hashFiles('package-lock.json') }} # 使用 package-lock.json 的 Hash 作为缓存的 key。也可以使用 package.json 代替
       - name: npm install
         run: |
-          cd ~/APPSIGN
+          cd ~/JavaScript
           git checkout main
           npm install
       - name: '运行 【芝嫲视频】'
         run: |
-          cd ~/APPSIGN
+          cd ~/JavaScript/Task
           node zhima.js
         env:
           TZ: Asia/shanghai
