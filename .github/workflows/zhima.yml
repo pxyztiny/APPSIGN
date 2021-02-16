@@ -37,4 +37,3 @@ jobs:
         env:
           TZ: Asia/shanghai
           BARK_PUSH: ${{ secrets.BARK_PUSH }}
-          ZM_zhimabody: ${{ secrets.ZM_zhimabody }}
