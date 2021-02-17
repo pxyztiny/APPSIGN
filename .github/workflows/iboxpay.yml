@@ -34,7 +34,7 @@ jobs:
         if: env.XP_refreshTOKEN
         run: |
           cd ~/APPSIGN
-          node xp.js
+          node iboxpay.js
         env:
           
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
