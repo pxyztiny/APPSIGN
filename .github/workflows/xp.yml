@@ -18,9 +18,6 @@ jobs:
         XP_CASH: ${{ secrets.XP_CASH }}
         XP_live: ${{ secrets.XP_live }}
     steps:
-      - name: Checkout
-        run: |
-          git clone https://github.com/heiwoya/lqbz.git ~/lqbz
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
@@ -28,13 +25,11 @@ jobs:
       - name: npm install
         if: env.XP_refreshTOKEN
         run: |
-          cd ~/lqbz
           npm install
       - name: '运行 【笑谱】'
         if: env.XP_refreshTOKEN
         run: |
-          cd ~/lqbz
-          node iboxpay.js
+          node xp.js
         env:
           
           PUSH_KEY: ${{ secrets.PUSH_KEY }}
