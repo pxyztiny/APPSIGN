@@ -18,6 +18,9 @@ jobs:
         XP_CASH: ${{ secrets.XP_CASH }}
         XP_live: ${{ secrets.XP_live }}
     steps:
+      - name: Checkout
+        run: |
+          git clone https://github.com/xuxiaobo4510/APPSIGN.git ~/APPSIGN
       - name: Use Node.js 12.x
         uses: actions/setup-node@v1
         with:
@@ -25,10 +28,12 @@ jobs:
       - name: npm install
         if: env.XP_refreshTOKEN
         run: |
+          cd ~/APPSIGN
           npm install
       - name: '运行 【笑谱】'
         if: env.XP_refreshTOKEN
         run: |
+          cd ~/APPSIGN
           node xp.js
         env:
           
@@ -39,5 +44,5 @@ jobs:
           BARK_SOUND: ${{ secrets.BARK_SOUND }}
           DD_BOT_TOKEN: ${{ secrets.DD_BOT_TOKEN }}
           DD_BOT_SECRET: ${{ secrets.DD_BOT_SECRET }}
-
-    
+          PUSH_PLUS_TOKEN: ${{ secrets.PUSH_PLUS_TOKEN }}
+          PUSH_PLUS_USER: ${{ secrets.PUSH_PLUS_USER }}
