@@ -22,7 +22,7 @@ jobs:
                   npm install
             - name: "运行【跃动】"
               run: |
-                  node BBB.js
+                  node ydz.js
               env:
                   BBBCK: ${{ secrets.YDZ_yuedongzuTOKEN }}
                   
