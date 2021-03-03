@@ -3,7 +3,7 @@ name: 跃动
 on:
     workflow_dispatch:
     schedule:
-        - cron: "6 45 0-23 * * *"
+        - cron: "45 0-23 * *  "
     watch:
         types: [started]
 
@@ -25,4 +25,5 @@ jobs:
                   node BBB.js
               env:
                   BBBCK: ${{ secrets.YDZ_yuedongzuTOKEN }}
+                  
                   PUSH_KEY: ${{ secrets.PUSH_KEY }}
