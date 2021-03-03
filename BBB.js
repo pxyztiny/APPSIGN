@@ -1,2086 +1,1458 @@
-/* ziye 
-github地址 https://github.com/ziye66666
-TG频道地址  https://t.me/ziyescript
-TG交流群   https://t.me/joinchat/AAAAAE7XHm-q1-7Np-tF3g
-boxjs链接  https://raw.githubusercontent.com/ziye66666/JavaScript/main/Task/ziye.boxjs.json
+/*
+adwktt
+轉載備註名字
+打开App获取Cookie
+下載地址：http://bububao.yichengw.cn/?id=524855
 
-转载请备注个名字，谢谢
+圈x
+[rewrite_local]
+#步步宝
+https://bububao.duoshoutuan.com/user/profile url script-request-header https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js
 
-⚠️步步宝
-点击 http://bububao.yichengw.cn/?id=529742 下载APP  谢谢支持
+[task_local]
+0 8-23/2 * * * https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js, tag=步步宝, 
 
+loon
+[Script]
+http-request https://bububao.duoshoutuan.com/user/profile script-path= https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js, timeout=10, tag= 步步宝
 
-2.21 制作
-2.23 完成
-2.23 修复ck问题
-2.24 调整通知布局，修复抽奖宝箱
-3.1 修复看看赚
-3.2 调整抽奖机制， 一次运行5次抽奖， 抽中1000金币则兑奖
-3.3 修复签到，增加10分钟限速，完善提现判定，修复睡觉，调整为抽奖200金币也领取
+cron "0 8-23/2 * * *" script-path= https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js, tag= 步步宝
 
-⚠️ 时间设置    0,30 0-23 * * *    每天 35次以上就行   
+surge
+步步宝 = type=cron,cronexp="0 8-23/2 * * *",wake-system=1,script-path=https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js,script-update-interval=0
+步步宝 = type=http-request,pattern=https://bububao.duoshoutuan.com/user/profile,requires-body=0,max-size=0,script-path=https://raw.githubusercontent.com/adwktt/adwktt/master/BBB.js,script-update-interval=0
 
- 
-一 视频助力手动也是不行的 
-二 默认0点睡23点醒，时间务必包括这两个点 
+hostname = bububao.duoshoutuan.com,
 
-(已内置随机udid，添加重写无视多设备检测，如非必要，勿频繁登录)
-
-
-⚠️一共1个位置 1个ck  👉 2条 Secrets 
-多账号换行
-
-第一步 添加  hostname=bububao.duoshoutuan.com,
-
-第二步 ⚠️添加步步宝获取TOKEN重写  
-
-登录步步宝  获取token
-bububaotokenVal 👉BBB_bububaoTOKEN
-
-
-CASH  👉  BBB_CASH     可设置0 0.3 50 100 200 888  默认0关闭提现，设置888由上至下循环提现
-
-
-⚠️主机名以及重写👇
-hostname=bububao.duoshoutuan.com,
-
-############## 圈x
-#步步宝获取TOKEN
-https:\/\/bububao\.duoshoutuan\.com\/user\/* url script-request-header https://raw.githubusercontent.com/ziye66666/JavaScript/main/Task/bububao.js
-
-############## loon
-#步步宝获取TOKEN
-http-response https:\/\/bububao\.duoshoutuan\.com\/user\/* script-path=https://raw.githubusercontent.com/ziye66666/JavaScript/main/Task/bububao.js, requires-body=1,max-size=0, tag=步步宝获取TOKEN
-
-############## surge
-#步步宝获取TOKEN
-步步宝获取TOKEN = type=http-response,pattern=https:\/\/bububao\.duoshoutuan\.com\/user\/*,script-path=https://raw.githubusercontent.com/ziye66666/JavaScript/main/Task/bububao.js
 */
 
-const $ = Env("步步宝");
-$.idx = ($.idx = ($.getval('bububaoSuffix') || '1') - 1) > 0 ? ($.idx + 1 + '') : ''; // 账号扩展字符
-const notify = $.isNode() ? require("./sendNotify") : ``;
-const COOKIE = $.isNode() ? require("./bububaoCOOKIE") : ``;
-const logs = 0; // 0为关闭日志，1为开启
-const notifyttt = 1 // 0为关闭外部推送，1为12 23 点外部推送
-const notifyInterval = 2; // 0为关闭通知，1为所有通知，2为12 23 点通知  ， 3为 6 12 18 23 点通知 
-$.message = '', COOKIES_SPLIT = '', CASH = '', ddtime = '';
-CZ = 10
-const bububaotokenArr = [];
-let bububaotokenVal = ``;
-let middlebububaoTOKEN = [];
+
+
+const $ = new Env('步步寶')
+let notice = ''
+//let CookieVal = $.getdata('bbb_ck')
+
+let CookieVal = process.env.BBBCK
+
 if ($.isNode()) {
-    // 没有设置 FL_DHCASH 则默认为 0 不兑换
-    CASH = process.env.BBB_CASH || 0;
-}
-if ($.isNode() && process.env.BBB_bububaoTOKEN) {
-    COOKIES_SPLIT = process.env.COOKIES_SPLIT || "\n";
-    console.log(
-        `============ cookies分隔符为：${JSON.stringify(
-      COOKIES_SPLIT
-    )} =============\n`
-    );
-    if (
-        process.env.BBB_bububaoTOKEN &&
-        process.env.BBB_bububaoTOKEN.indexOf(COOKIES_SPLIT) > -1
-    ) {
-        middlebububaoTOKEN = process.env.BBB_bububaoTOKEN.split(COOKIES_SPLIT);
-    } else {
-        middlebububaoTOKEN = process.env.BBB_bububaoTOKEN.split();
-    }
-}
-if (COOKIE.bububaotokenVal) {
-    BBB_COOKIES = {
-        "bububaotokenVal": COOKIE.bububaotokenVal.split('\n'),
-    }
-    Length = BBB_COOKIES.bububaotokenVal.length;
-}
-if (!COOKIE.bububaotokenVal) {
-    if ($.isNode()) {
-        Object.keys(middlebububaoTOKEN).forEach((item) => {
-            if (middlebububaoTOKEN[item]) {
-                bububaotokenArr.push(middlebububaoTOKEN[item]);
-            }
-        });
-    } else {
-        bububaotokenArr.push($.getdata("bububaotoken"));
-        // 根据boxjs中设置的额外账号数，添加存在的账号数据进行任务处理
-        if ("bububaoCASH") {
-            CASH = $.getval("bububaoCASH") || '0';
-        }
-        let bububaoCount = ($.getval('bububaoCount') || '1') - 0;
-        for (let i = 2; i <= bububaoCount; i++) {
-            if ($.getdata(`bububaotoken${i}`)) {
-                bububaotokenArr.push($.getdata(`bububaotoken${i}`));
-            }
-        }
-    }
-    if (bububaotokenArr == '') {
-        Length = 0
-    } else Length = bububaotokenArr.length
+      console.log(`============ 脚本执行-国际标准时间(UTC)：${new Date().toLocaleString()}  =============\n`)
+      console.log(`============ 脚本执行-北京时间(UTC+8)：${new Date(new Date().getTime() + 8 * 60 * 60 * 1000).toLocaleString()}  =============\n`)
 }
 
-function GetCookie() {
-    if ($request && $request.url.indexOf("login") >= 0) {
-        modifiedHeaders = $request.headers;
-        modifiedHeaders['imei'] = udid()
-        console.log(JSON.stringify(modifiedHeaders));
-        $done({
-            headers: modifiedHeaders
-        });
-    }
-    if ($request && $request.url.indexOf("profile") >= 0) {
-        const bububaotokenVal = $request.headers.tokenstr;
-        if (bububaotokenVal) $.setdata(bububaotokenVal, "bububaotoken" + $.idx);
-        $.log(
-            `[${$.name + $.idx}] 获取bububaotokenVal✅: 成功,bububaotokenVal: ${bububaotokenVal}`
-        );
-        $.msg($.name + $.idx, `获取bububaotokenVal: 成功🎉`, ``);
-    }
-}
-console.log(
-    `================== 脚本执行 - 北京时间(UTC+8)：${new Date(
-    new Date().getTime() +
-    new Date().getTimezoneOffset() * 60 * 1000 +
-    8 * 60 * 60 * 1000
-  ).toLocaleString()} =====================\n`
-);
-console.log(
-    `============ 共 ${Length} 个${$.name}账号=============\n`
-);
-//时间
-nowTimes = new Date(
-    new Date().getTime() +
-    new Date().getTimezoneOffset() * 60 * 1000 +
-    8 * 60 * 60 * 1000
-);
-//今天
-Y = nowTimes.getFullYear() + '-';
-M = (nowTimes.getMonth() + 1 < 10 ? '0' + (nowTimes.getMonth() + 1) : nowTimes.getMonth() + 1) + '-';
-D = (nowTimes.getDate() < 10 ? '0' + (nowTimes.getDate()) : nowTimes.getDate());
-ddtime = Y + M + D;
-console.log(ddtime)
-//当前时间戳
-function tts(inputTime) {
-    if ($.isNode()) {
-        TTS = Math.round(new Date().getTime() +
-            new Date().getTimezoneOffset() * 60 * 1000).toString();
-    } else TTS = Math.round(new Date().getTime() +
-        new Date().getTimezoneOffset() * 60 * 1000 + 8 * 60 * 60 * 1000).toString();
-    return TTS;
-};
-//当前10位时间戳
-function ts(inputTime) {
-    if ($.isNode()) {
-        TS = Math.round((new Date().getTime() +
-            new Date().getTimezoneOffset() * 60 * 1000) / 1000).toString();
-    } else TS = Math.round((new Date().getTime() +
-        new Date().getTimezoneOffset() * 60 * 1000 +
-        8 * 60 * 60 * 1000) / 1000).toString();
-    return TS;
-};
-//今天0点时间戳时间戳
-function daytime(inputTime) {
-    if ($.isNode()) {
-        DAYTIME =
-            new Date(new Date().toLocaleDateString()).getTime() - 8 * 60 * 60 * 1000;
-    } else DAYTIME = new Date(new Date().toLocaleDateString()).getTime();
-    return DAYTIME;
-};
-//时间戳格式化日期
-function time(inputTime) {
-    if ($.isNode()) {
-        var date = new Date(inputTime + 8 * 60 * 60 * 1000);
-    } else var date = new Date(inputTime);
-    Y = date.getFullYear() + '-';
-    M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
-    D = date.getDate() + ' ';
-    h = date.getHours() + ':';
-    m = date.getMinutes() + ':';
-    s = date.getSeconds();
-    return Y + M + D + h + m + s;
-};
-//日期格式化时间戳
-function timecs() {
-    if ($.isNode()) {
-        var date = new Date(newtime).getTime() - 8 * 60 * 60 * 1000
-    } else var date = new Date(newtime).getTime()
 
-    return date;
-};
-//随机udid 大写
-function udid() {
-    var s = [];
-    var hexDigits = "0123456789ABCDEF";
-    for (var i = 0; i < 36; i++) {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-    }
-    s[14] = "4"; // bits 12-15 of the time_hi_and_version field to 0010
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1); // bits 6-7 of the clock_seq_hi_and_reserved to 01
-    s[8] = s[13] = s[18] = s[23] = "-";
-    var uuid = s.join("");
-    return uuid;
-}
-//随机udid 小写
-function udid2() {
-    function S4() {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
-    }
-    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4());
-}
-//编码
-function encodeUnicode(str) {
-    var res = [];
-    for (var i = 0; i < str.length; i++) {
-        res[i] = ("00" + str.charCodeAt(i).toString(16)).slice(-4);
-    }
-    return "\\u" + res.join("\\u");
-}
-//解码
-function decodeUnicode(str) {
-    str = str.replace(/\\/g, "%");
-    return unescape(str);
-}
-let isGetCookie = typeof $request !== 'undefined'
-if (isGetCookie) {
-    GetCookie()
-    $.done();
+
+now = new Date(new Date().getTime() + new Date().getTimezoneOffset()*60*1000 + 8*60*60*1000);  
+
+if (typeof $request !== 'undefined') {
+   if ($request && $request.method != `OPTIONS` && $request.url.indexOf('user/profile') != -1) {
+     const CookieVal = JSON.stringify($request.headers)
+if(CookieVal)$.setdata(CookieVal,'bbb_ck')
+     $.log(`CookieVal:${CookieVal}`)
+     $.msg($.name,"获取Cookie成功")
+     $.done()
+   }
 } else {
-    !(async () => {
-        await all();
-        await $.wait(1000)
-        await msgShow();
-    })()
-    .catch((e) => {
-            $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
-        })
-        .finally(() => {
-            $.done();
-        })
-}
-async function all() {
-    if (!Length) {
-        $.msg(
-            $.name,
-            '提示：⚠️请点击前往获取http://bububao.yichengw.cn/?id=529742\n',
-            'http://bububao.yichengw.cn/?id=529742', {
-                "open-url": "http://bububao.yichengw.cn/?id=529742"
-            }
-        );
-        return;
-    }
-    for (let i = 0; i < Length; i++) {
-        if (COOKIE.bububaotokenVal) {
-            bububaotokenVal = BBB_COOKIES.bububaotokenVal[i];
-        }
-        if (!COOKIE.bububaotokenVal) {
-            bububaotokenVal = bububaotokenArr[i];
-        }
-        header = {
-            'store': `appstore`,
-            'tokenstr': `${bububaotokenVal}`,
-            'Connection': `keep-alive`,
-            'Accept-Encoding': `gzip, deflate, br`,
-            'version': `10`,
-            'idfa': ``,
-            'Content-Type': `application/x-www-form-urlencoded`,
-            'User-Agent': `BBB/132 CFNetwork/1206 Darwin/20.1.0`,
-            'platform': `2`,
-            'imei': ``,
-            'Cookie': ``,
-            'Host': `bububao.duoshoutuan.com`,
-            'Accept-Language': `zh-cn`,
-            'Accept': `*/*`
-        };
-        O = (`${$.name + (i + 1)}🔔`);
-        await console.log(`-------------------------\n\n🔔开始运行【${$.name+(i+1)}】`)
-        let cookie_is_live = await user(); //用户名
-        if (!cookie_is_live) {
-            continue;
-        }
-        await userjinbi() //收益记录
-        if (CZ >= 10) {
-            await help_index() //助力活动
-            await home() //首页信息
-            await jindan_click() //首页金蛋
-            await sign_html() //签到
-            await dk_info() //打卡
-            await cy_info() //答题
-            await water_info() //喝水
-            await sleep_info() //睡觉
-            await ggk() //刮刮卡
-            await $.wait(8000)
-            await lucky() //转盘抽奖
-            await $.wait(1000)
-            await lucky() //转盘抽奖
-            await $.wait(1000)
-            await lucky() //转盘抽奖
-            await $.wait(1000)
-            await h5_list() //看看赚
-            await news() //看文章
-            await renwu() //赚赚任务
-            await tixian_html() //提现
-        }
-    }
-}
-//通知
-function msgShow() {
-    return new Promise(async resolve => {
-        if (notifyInterval != 1) {
-            console.log($.name + '\n' + $.message);
-        }
-        if (notifyInterval == 1) {
-            $.msg($.name, ``, $.message);
-        }
-        if (notifyInterval == 2 && (nowTimes.getHours() === 12 || nowTimes.getHours() === 23) && (nowTimes.getMinutes() >= 0 && nowTimes.getMinutes() <= 10)) {
-            $.msg($.name, ``, $.message);
-        }
-        if (notifyInterval == 3 && (nowTimes.getHours() === 6 || nowTimes.getHours() === 12 || nowTimes.getHours() === 18 || nowTimes.getHours() === 23) && (nowTimes.getMinutes() >= 0 && nowTimes.getMinutes() <= 10)) {
-            $.msg($.name, ``, $.message);
-        }
-        if (notifyttt == 1 && $.isNode() && (nowTimes.getHours() === 12 || nowTimes.getHours() === 23) && (nowTimes.getMinutes() >= 0 && nowTimes.getMinutes() <= 10))
-            await notify.sendNotify($.name, $.message);
-        resolve()
-    })
-}
-//用户名
-function user(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/profile?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 用户名🚩: ${data}`);
-                    $.user = JSON.parse(data);
-                    if ($.user.uid) {
-                        console.log(`\n${O}\n========== ${$.user.username} ==========\n微信绑定：${$.user.wx_username},今日收益：${$.user.day_jinbi/10000}元\n现金余额：${$.user.money}元,累计收益：${$.user.leiji_jinbi/10000}元,今日步数：${$.user.steps}步\n`)
-                        $.message += `\n${O}\n========== 【${$.user.username}】 ==========\n【微信绑定】：${$.user.wx_username},今日收益：${$.user.day_jinbi/10000}元\n【现金余额】：${$.user.money}元,累计收益：${$.user.leiji_jinbi/10000}元,今日步数：${$.user.steps}步\n`;
-                        resolve(true);
-                    }
-                    if (!$.user.uid) {
-                        $.msg(O, time(Number(tts())) + "❌❌❌COOKIE失效");
-                        if ($.isNode()) {
-                            notify.sendNotify(O, time(Number(tts())) + "❌❌❌COOKIE失效");
-                        }
-                        resolve(false);
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
+!(async () => {
 
+$.msg($.name,"開始🎉🎉🎉")
 
-//收益记录
-function userjinbi(timeout = 0) {
-    return new Promise(async (resolve) => {
-        setTimeout(() => {
-                let url = {
-                    url: `https://bububao.duoshoutuan.com/user/userjinbi?`,
-                    headers: header,
-                    body: `page=1&page_limit=25&`,
-                }
-                $.post(url, async (err, resp, data) => {
-                    try {
-                        if (logs) $.log(`${O}, 收益记录🚩: ${data}`);
-                        $.userjinbi = JSON.parse(data);
+      await cashCheck()
+      await signIn()
+      await checkWaterNum()
+      await zaoWanDkInfo()
+      await sleepStatus()
+      await clickTaskStatus()
+      await watchTaskStatus()
+      //await helpStatus()
+      await getNewsId()
+      await checkWaterNum()
+      await getQuestionId()
+      await guaList()
+      await checkWaterNum()
+      await checkHomeJin()
+      await userInfo()
+      await showmsg()
 
-                        if ($.userjinbi && $.userjinbi[0].add_date) {
-                            newtime = $.userjinbi[0].add_date + 'T' + $.userjinbi[0].add_time
-                            CZ = ((tts() - timecs(newtime)) / 60000).toFixed(0)
-
-                            console.log(`收益记录：距离上次收益${CZ}分钟，已限速10分钟\n`);
-                            $.message += `【收益记录】：距离上次收益${CZ}分钟，已限速10分钟\n`;
-
-                        }
-
-
-                    } catch (e) {
-                        $.logErr(e, resp);
-                    } finally {
-                        resolve()
-                    }
-                })
-            },
-            timeout)
-    })
+})()
+    .catch((e) => $.logErr(e))
+    .finally(() => $.done())
 }
 
 
 
-//首页信息
-function home(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/home?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 首页信息🚩: ${data}`);
-                    $.home = JSON.parse(data);
-                    if ($.home.right_jinbi) {
-                        console.log(`首页信息：金币：${$.home.right_jinbi}金币,红包：${$.home.hb_jinbi}金币\n`);
-                        $.message += `【首页信息】：金币：${$.home.right_jinbi}金币,红包：${$.home.hb_jinbi}金币\n`;
-                        if ($.home.right_time) {
-                            console.log(`金币等待：${$.home.right_time}秒\n`);
-                            $.message += `【金币等待】：${$.home.right_time}秒\n`;
-                        }
-                        if ($.home.hb_time) {
-                            console.log(`红包等待：${$.home.hb_time}秒\n`);
-                            $.message += `【红包等待】：${$.home.hb_time}秒\n`;
-                        }
-                        if ((!$.home.hb_time || $.home.hb_time <= 0) && $.home.hb_st != 2) {
-                            await syhb() //首页红包
-                        }
-                        if ((!$.home.right_time || $.home.right_time <= 0) && $.home.right_st != 2) {
-                            await homejin() //首页金币
-                        }
-                        if ($.home.right_st == 2) {
-                            console.log(`首页金币：已完成\n`);
-                            $.message += `【首页金币】：已完成\n`;
-                        }
-                        if ($.home.hb_st == 2) {
-                            console.log(`首页红包：已完成\n`);
-                            $.message += `【首页红包】：已完成\n`;
-                        }
-                        if ($.home.steps_btn_st == 1) {
-                            await donejin() //步数奖励
-                        }
-                        if ($.home.jinbi > 0) {
-                            collsteps() //步数金币
-                        }
-                        await step7() //7日达标
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//步数奖励
-function donejin(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/donejin?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 步数奖励🚩: ${data}`);
-                    $.donejin = JSON.parse(data);
-                    if ($.donejin.code == 1) {
-                        console.log(`步数奖励：${$.donejin.tip},${$.donejin.msg}\n`);
-                        $.message += `【步数奖励】：${$.donejin.tip},${$.donejin.msg}\n`;
-                        nonce_str = $.donejin.nonce_str
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//步数金币
-function collsteps(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/collsteps?`,
-                headers: header,
-                body: `duihuan_dialog=0&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 步数金币🚩: ${data}`);
-                    $.collsteps = JSON.parse(data);
-                    if ($.collsteps.code == 1) {
-                        console.log(`步数金币：${$.collsteps.jinbi}金币,${$.collsteps.msg}\n`);
-                        $.message += `【步数金币】：${$.collsteps.jinbi}金币,${$.collsteps.msg}\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//7天达标
-function step7(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/step7?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 7天达标🚩: ${data}`);
-                    $.step7 = JSON.parse(data);
-                    if (data.match(/month_day/g) && !data.match(/"is_dabiao": 0/g)) {
-                        console.log(`7天达标：已达标\n`);
-                        $.message += `【7天达标】：已达标\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//附加处理
-function callback(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/you/callback?`,
-                headers: header,
-                body: `nonce_str=${nonce_str}&tid=${tid}&pos=${pos}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 附加处理🚩:${data}`);
-                    $.callback = JSON.parse(data);
-                    if ($.callback.code == 1) {
-                        console.log(`附加处理：成功\n`);
-                        //$.message += `【附加处理】：成功\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//前置处理
-function chuansj(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/chuansj?`,
-                headers: header,
-                body: `mini_pos=${mini_pos}&c_type=${c_type}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 前置处理🚩: ${data}`);
-                    $.chuansj = JSON.parse(data);
-                    if ($.chuansj.code == 1) {
-                        console.log(`前置处理：成功\n`);
-                        //$.message += `【前置处理】：成功\n`;
-                        nonce_str = $.chuansj.nonce_str
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//首页金币
-function homejin(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/homejin?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 首页金币🚩: ${data}`);
-                    $.homejin = JSON.parse(data);
-                    if ($.homejin.code == 1) {
-                        console.log(`首页金币：成功领取${$.homejin.jinbi}金币\n`);
-                        $.message += `【首页金币】：成功领取${$.homejin.jinbi}金币\n`;
-                    }
-                    tid = 21
-                    pos = 1
-                    nonce_str = $.homejin.nonce_str
-                    await callback()
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//首页红包
-async function syhb() {
-    console.log(`首页红包：开始执行\n`);
-    $.message += `【首页红包】：开始执行\n`;
-    mini_pos = 0
-    c_type = 2
-    tid = 17
-    pos = 2
-    await chuansj()
-    await callback()
-}
-//金蛋前置
-function jindan_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/jindan_click?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 金蛋前置🚩: ${data}`);
-                    $.jindan_click = JSON.parse(data);
-                    if ($.jindan_click.code == 1) {
-                        taskid = $.jindan_click.taskid
-                        nonce_str = $.jindan_click.nonce_str
-                        await jindan_done() //首页金蛋
-                    }
-                    if ($.jindan_click.code == -1) {
-                        console.log(`首页金蛋：已完成\n`);
-                        $.message += `【首页金蛋】：已完成\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//首页金蛋
-function jindan_done(timeout = 0) {
-    return new Promise(async (resolve) => {
-        setTimeout(() => {
-                let url = {
-                    url: `https://bububao.duoshoutuan.com/user/jindan_done?`,
-                    headers: header,
-                    body: `taskid=${taskid}&clicktime=${ts()}&donetime=${ts()}&nonce_str=${nonce_str}&`,
-                }
-                $.post(url, async (err, resp, data) => {
-                    try {
-                        if (logs) $.log(`${O}, 首页金蛋🚩: ${data}`);
-                        $.jindan_done = JSON.parse(data);
-                        if ($.jindan_done.code == 1) {
-                            console.log(`首页金蛋：${$.jindan_done.jinbi}金币,领取成功\n`);
-                            $.message += `【首页金蛋】：${$.jindan_done.jinbi}金币,领取成功\n`;
-                            nonce_str = $.jindan_done.nonce_str
-                            tid = 5
-                            pos = 2
-                            await callback()
-                        }
-                    } catch (e) {
-                        $.logErr(e, resp);
-                    } finally {
-                        resolve()
-                    }
-                })
-            },
-            timeout)
-    })
-}
-//助力活动
-function help_index(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/help_index?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 助力活动🚩: ${data}`);
-                    $.help_index = JSON.parse(data);
-                    if ($.help_index.code == 1) {
-                        console.log(`助力活动：现金${$.help_index.jinbi}元,差${$.help_index.diff_jinbi}元,时间剩余${($.help_index.time/3600).toFixed(0)}小时\n`);
-                        $.message += `【助力活动】：现金${$.help_index.jinbi}元,差${$.help_index.diff_jinbi}元,时间剩余${($.help_index.time/3600).toFixed(0)}小时\n`;
-                        nonce_str = $.help_index.nonce_str
-                        //if ($.help_index.diff_jinbi > 0) {
-                        //await help_click()
-                        //}
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//视频助力
-function help_click(timeout = 0) {
-    return new Promise(async (resolve) => {
-        mini_pos = 5
-        c_type = 1
-        await chuansj()
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/help_click?`,
-                headers: header,
-                body: `nonce_str=${nonce_str}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 视频助力🚩: ${data}`);
-                    $.help_click = JSON.parse(data);
-                    if ($.help_click.code == 1) {
-                        console.log(`视频助力：${$.help_click.jinbi/10000}元,领取成功\n`);
-                        $.message += `【视频助力】：${$.help_click.jinbi/10000}金币,领取成功\n`;
-                        nonce_str = $.help_click.nonce_str
-                        tid = 22
-                        pos = 1
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//每日签到
-function sign(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/sign?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 每日签到🚩: ${data}`);
-                    $.sign = JSON.parse(data);
-                    if ($.sign.code == 1) {
-                        console.log(`每日签到：${$.sign.msg}\n`);
-                        $.message += `【每日签到】：${$.sign.msg}\n`;
-                        tid = 2
-                        pos = 1
-                        nonce_str = $.sign.nonce_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//签到列表
-function sign_html(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/sign_html?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 签到列表🚩: ${data}`);
-                    $.sign_html = JSON.parse(data);
-                    if ($.sign_html.jinbi_html) {
-                        console.log(`签到列表：已签到${$.sign_html.sign_day}天\n`);
-                        $.message += `【签到列表】：已签到${$.sign_html.sign_day}天\n`;
-                        if ($.sign_html.is_sign_day == 0) {
-                            await sign() //签到
-                        } else {
-                            console.log(`每日签到：已签到\n`);
-                            $.message += `【每日签到】：已签到\n`;
+function showmsg(){
+    $.msg($.name, '', notice)
+     }
 
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//早晚打卡页
-function dk_info(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/dk_info?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 早晚打卡页🚩: ${data}`);
-                    $.dk_info = JSON.parse(data);
-                    if ($.dk_info.code == 1) {
-                        now_time = $.dk_info.now_time
-                        console.log(`早晚打卡页：${$.dk_info.day},${$.dk_info.title1}\n`);
-                        $.message += `【早晚打卡页】：${$.dk_info.day},${$.dk_info.title1}\n`;
-                        if ($.dk_info.is_dk == 0) {
-                            await dk_click() //早晚打卡
-                        }
-                        if ($.dk_info.is_dk == 1) {
-                            console.log(`早晚打卡：已完成\n`);
-                            $.message += `【早晚打卡】：已完成\n`;
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//早晚打卡
-function dk_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/dk_click?`,
-                headers: header,
-                body: `now_time=${now_time}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 早晚打卡🚩: ${data}`);
-                    $.dk_click = JSON.parse(data);
-                    if ($.dk_click.code == 1) {
-                        console.log(`早晚打卡：获得${$.dk_click.jinbi}金币\n`);
-                        $.message += `【早晚打卡】：获得${$.dk_click.jinbi}金币\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//答题活动页
-function cy_info(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/cy_info?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 答题活动页🚩: ${data}`);
-                    $.cy_info = JSON.parse(data);
-                    if ($.cy_info.code == 1) {
-                        console.log(`答题活动页：剩余${$.cy_info.day_num}次\n`);
-                        $.message += `【答题活动页】：剩余${$.cy_info.day_num}次\n`;
-                        cy_id = $.cy_info.cy_id
-                        site = $.cy_info.site
-                        day_num = $.cy_info.day_num
-                        if ($.cy_info.day_num >= 1) {
-                            await cy_sp() //答题前置
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//答题前置
-function cy_sp(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/cy_sp?`,
-                headers: header,
-                body: `day_num=${day_num}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 答题前置🚩: ${data}`);
-                    $.cy_sp = JSON.parse(data);
-                    if ($.cy_sp.code == 1) {
-                        console.log(`答题前置：${$.cy_sp.msg}\n`);
-                        $.message += `【答题前置】：${$.cy_sp.msg}\n`;
-                        await cy_click() //答题                                         
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//答题活动
-function cy_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/cy_click?`,
-                headers: header,
-                body: `cy_id=${cy_id}&site=${site}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 答题活动🚩: ${data}`);
-                    $.cy_click = JSON.parse(data);
-                    if ($.cy_click.code == 1) {
-                        console.log(`答题成功：获得${$.cy_click.jinbi}金币\n`);
-                        $.message += `【答题成功】：获得${$.cy_click.jinbi}金币\n`;
-                        tid = 18
-                        pos = 1
-                        nonce_str = $.cy_click.nonce_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//每天喝水
-function water_info(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/water_info?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 每天喝水🚩: ${data}`);
-                    $.water_info = JSON.parse(data);
-                    if ($.water_info.code == 1) {
-                        day_num = $.water_info.day_num
-                        if ($.water_info.day_num <= 6 && $.water_info.next_time == 0) {
-                            await water_click() //开始喝水
-                        }
-                        if ($.water_info.next_time) {
-                            console.log(`每天喝水：已喝${$.water_info.day_num}杯\n`);
-                            $.message += `【每天喝水】：已喝${$.water_info.day_num}杯\n`;
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//开始喝水
-function water_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/water_click?`,
-                headers: header,
-                body: `day_num=${day_num}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 开始喝水🚩: ${data}`);
-                    $.water_click = JSON.parse(data);
-                    if ($.water_click.code == 1) {
-                        console.log(`${$.water_click.msg}：获得${$.water_click.jinbi}金币\n`);
-                        $.message += `【${$.water_click.msg}】：获得${$.water_click.jinbi}金币\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//睡觉状态
-function sleep_info(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/sleep_info?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 睡觉状态🚩: ${data}`);
-                    $.sleep_info = JSON.parse(data);
-                    if ($.sleep_info.is_sleep == 1) {
-                        console.log(`睡觉状态：做梦中\n`);
-                        $.message += `【睡觉状态】：做梦中\n`;
-                        if (nowTimes.getHours() === 23) {
-                            await sleep_end()
-                        }
-                    }
-                    if ($.sleep_info.is_sleep == 0) {
-                        console.log(`睡觉状态：清醒中\n`);
-                        $.message += `【睡觉状态】：清醒中\n`;
-                        if (nowTimes.getHours() === 0) {
-                            await sleep_start()
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//开始睡觉
-function sleep_start(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/sleep_start?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 开始睡觉🚩: ${data}`);
-                    $.sleep_start = JSON.parse(data);
-                    if ($.sleep_start.code == 1) {
-                        console.log(`开始睡觉：开始睡觉\n`);
-                        $.message += `【开始睡觉】：开始睡觉\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//结束睡觉
-function sleep_end(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/sleep_end?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 结束睡觉🚩: ${data}`);
-                    $.sleep_end = JSON.parse(data);
-                    if ($.sleep_end.code == 1) {
-                        console.log(`结束睡觉：结束睡觉，产生${$.sleep_end.jinbi}金币\n`);
-                        $.message += `【结束睡觉】：结束睡觉，产生${$.sleep_end.jinbi}金币\n`;
-                        taskid = $.sleep_end.taskid
-                        nonce_str = $.sleep_end.nonce_str
-                        await sleep_done() //睡觉奖励
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//睡觉奖励
-function sleep_done(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/mini/sleep_done?`,
-                headers: header,
-                body: `taskid=${taskid}&nonce_str=${nonce_str}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 睡觉奖励🚩: ${data}`);
-                    $.sleep_done = JSON.parse(data);
-                    if ($.sleep_done.code == 1) {
-                        console.log(`睡觉奖励：睡觉奖励领取${$.sleep_done.jinbi}金币\n`);
-                        $.message += `【睡觉奖励】：睡觉奖励领取${$.sleep_done.jinbi}金币\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-
-//刮刮卡
-async function ggk() {
-    for (let i = 0; i < 5; i++) {
-        setTimeout(async () => {
-            await gualist()
-        }, i * 2000);
-    }
-}
-
-//刮刮卡列表
-function gualist(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/gua/gualist?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 刮刮卡列表🚩: ${data}`);
-                    $.gualist = JSON.parse(data);
-                    if ($.gualist.ka && $.gualist.ka >= 1) {
-                        idlist = $.gualist.list.find(item => item.is_ad === '0');
-                        id = idlist.id
-                        console.log(`刮刮卡列表：剩余${$.gualist.ka}张，下一张${idlist.jine}元\n`);
-                        $.message += `【刮刮卡列表】：剩余${$.gualist.ka}张，下一张${idlist.jine}元\n`;
-                        await guadet() //刮卡
-                    }
-                    if ($.gualist.ka && $.gualist.ka == 0) {
-                        console.log(`刮刮卡列表：剩余${$.gualist.ka}张，已完成\n`);
-                        $.message += `【刮刮卡列表】：剩余${$.gualist.ka}张，已完成\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//刮刮卡
-function guadet(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/gua/guadet?`,
-                headers: header,
-                body: `gid=${id}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 刮刮卡🚩: ${data}`);
-                    $.guadet = JSON.parse(data);
-                    if ($.guadet.jine) {
-                        guacs = data.match(/x(\d+).png/g).length + 1
-
-                        if (!guacs) {
-                            console.log(`【刮刮卡查询】：开启${$.guadet.jine}元,抽中1等奖\n`)
-                            $.message += `【刮刮卡查询】：开启${$.guadet.jine}元,抽中1等奖\n`;
-                            console.log(`【刮刮卡领取】：成功领奖\n`)
-                            $.message += `【刮刮卡领取】：成功领奖\n`;
-                            sign = $.guadet.sign
-                            glid = $.guadet.glid
-                            await guapost() //刮卡奖励
-                        }
-                        if (guacs) {
-                            console.log(`【刮刮卡查询】：开启${$.guadet.jine}元,抽中${guacs}等奖\n`)
-                            $.message += `【刮刮卡查询】：开启${$.guadet.jine}元,抽中${guacs}等奖\n`;
-                            if (guacs <= 3) {
-                                console.log(`【刮刮卡领取】：成功领奖\n`)
-                                $.message += `【刮刮卡领取】：成功领奖\n`;
-                                sign = $.guadet.sign
-                                glid = $.guadet.glid
-                                await guapost() //刮卡奖励
-                            } else {
-                                console.log(`【刮刮卡领取】：再来一次\n`)
-                                $.message += `【刮刮卡领取】：再来一次\n`;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//刮刮卡奖励
-function guapost(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/gua/guapost?`,
-                headers: header,
-                body: `sign=${sign}&gid=${id}&glid=${glid}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 刮刮卡奖励🚩: ${data}`);
-                    $.guapost = JSON.parse(data);
-                    if ($.guapost.jf) {
-                        console.log(`刮刮卡奖励：获得${$.guapost.jf}金币\n`);
-                        $.message += `【刮刮卡奖励】：获得${$.guapost.jf}金币\n`;
-                        tid = 6
-                        pos = 1
-                        nonce_str = $.guapost.nonce_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//转盘列表
-function lucky(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/lucky?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 转盘列表🚩: ${data}`);
-                    $.lucky = JSON.parse(data);
-                    if ($.lucky.lucky_num) {
-                        console.log(`转盘列表：剩余${$.lucky.lucky_num}次，已运行${$.lucky.lucky_count}次\n`);
-                        $.message += `【转盘列表】：剩余${$.lucky.lucky_num}次，已运行${$.lucky.lucky_count}次\n`;
-                        if ($.lucky.lucky_num >= 1) {
-                            await lucky_click() //转盘抽奖
-                        }
-                    }
-                    if ($.lucky && $.lucky.lucky_box.indexOf('1') >= 0) {
-                        box = $.lucky.lucky_box.indexOf('1') + 1
-                        await lucky_box() //抽奖宝箱
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//转盘抽奖
-function lucky_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/lucky_click?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 转盘抽奖🚩: ${data}`);
-                    $.lucky_click = JSON.parse(data);
-                    if ($.lucky_click.jinbi) {
-                        console.log(`转盘抽奖：获得${$.lucky_click.jinbi}金币\n`);
-                        $.message += `【转盘抽奖】：获得${$.lucky_click.jinbi}金币\n`;
-                        tid = 16
-                        pos = 2
-                        nonce_str = $.lucky_click.nonce_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//抽奖宝箱
-function lucky_box(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/lucky_box?`,
-                headers: header,
-                body: `box=${box}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 抽奖宝箱🚩: ${data}`);
-                    $.lucky_box = JSON.parse(data);
-                    if ($.lucky_box.jinbi) {
-                        console.log(`抽奖宝箱：获得${$.lucky_box.jinbi}金币\n`);
-                        $.message += `【抽奖宝箱】：获得${$.lucky_box.jinbi}金币\n`;
-                        tid = 16
-                        pos = 2
-                        nonce_str = $.lucky_box.nonce_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//看看赚列表
-function h5_list(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/h5_list?`,
-                headers: header,
-                body: `page=1&page_limit=25&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看看赚列表🚩: ${data}`);
-                    $.h5_list = JSON.parse(data);
-                    is_ok = $.h5_list.find(item => item.is_ok === 0);
-                    if (is_ok) {
-                        id = is_ok.id
-                        console.log(`看看赚列表：下个任务：${is_ok.mini_name}\n`);
-                        $.message += `【看看赚列表】：下个任务：${is_ok.mini_name}\n`;
-
-                        await h5_news() //看看赚执行
-                    } else {
-                        console.log(`看看赚：已完成\n`);
-                        $.message += `【看看赚】：已完成\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//看看赚执行
-function h5_news(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/h5_news?`,
-                headers: header,
-                body: `mini_id=${id}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看看赚执行🚩: ${data}`);
-                    $.h5_news = JSON.parse(data);
-                    if ($.h5_news.taskid) {
-                        console.log(`看看赚执行：下个任务：${$.h5_news.mini_str}\n`);
-                        $.message += `【看看赚执行】：下个任务：${$.h5_news.mini_str}\n`;
-                        taskid = $.h5_news.taskid
-                        nonce_str = $.h5_news.nonce_str
-                        await $.wait(15000)
-                        await h5_h5() //看看上传
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-
-//看看赚上传
-function h5_h5(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://hunter-report.dui88.com/tuiaExtLog?group=1&type=9&json=%7B%22subtype%22%3A%22head%22%2C%22tck_rid_6c8%22%3A%220a56e7aaklm541ew-6681973%22%2C%22slotId%22%3A%22353024%22%2C%22activityId%22%3A%2216765%22%2C%22consumerId%22%3A%2226444115908%22%2C%22timestamp%22%3A${tts()}%7D`,
-                headers: {
-                    "Host": "hunter-report.dui88.com"
-                },
-
-            }
-            $.get(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看看赚上传🚩: ${data}`);
-                    $.h5_h5 = JSON.parse(data);
-                    console.log(`看看赚：${$.h5_h5.msg}\n`);
-                    $.message += `【看看赚】：${$.h5_h5.msg}\n`;
-
-                    await $.wait(30000)
-                    await h5_newsdone() //看看赚完成
-
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
+var getBoxId = (function () {
+    var i = 0;
+    return function () {
+        return ++i;
+    };
+})();
 
 
-//看看赚完成
-function h5_newsdone(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/h5_newsdone?`,
-                headers: header,
-                body: `taskid=${taskid}&nonce_str=${nonce_str}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看看赚完成🚩: ${data}`);
-                    $.h5_newsdone = JSON.parse(data);
-                    if ($.h5_newsdone.msg) {
-                        console.log(`看看赚完成：${$.h5_newsdone.msg}${$.h5_newsdone.jinbi}金币\n`);
-                        $.message += `【看看赚完成】：${$.h5_newsdone.msg}${$.h5_newsdone.jinbi}金币\n`;
-                        tid = 10
-                        pos = 1
-                        nonce_str = $.h5_newsdone.fb_str
-                        await callback()
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//赚赚任务
-function renwu(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/renwu?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 赚赚任务🚩: ${data}`);
-                    $.renwu = JSON.parse(data);
-                    if ($.renwu.v_st == 0) {
-                        await sp() //看视频
-                    }
-                    if ($.renwu.first.admobile_st == 0) {
-                        await admobile_show() //看广告
-                    }
-                    if ($.renwu.v_st == 2) {
-                        console.log(`看视频：250金币，已完成\n`);
-                        $.message += `【看视频】：250金币，已完成\n`;
-                    }
-                    if ($.renwu.first.admobile_st == 2) {
-                        console.log(`看广告：200金币，已完成\n`);
-                        $.message += `【看广告】：200金币，已完成\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//看文章
-function news(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/news?`,
-                headers: header,
-                body: `type_class=1&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看文章🚩: ${data}`);
-                    $.news = JSON.parse(data);
-                    if ($.news.code == 1 && $.news.is_max == 0) {
-                        nonce_str = $.news.nonce_str
-                        await donenews() //看文章完成
-                    }
-                    if ($.news.code == 1 && $.news.is_max == 1) {
-                        console.log(`看文章：900金币，完成\n`);
-                        $.message += `【看文章】：900金币，完成\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//看文章完成
-function donenews(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/donenews?`,
-                headers: header,
-                body: `nonce_str=${nonce_str}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 看文章完成🚩: ${data}`);
-                    $.donenews = JSON.parse(data);
-                    if ($.donenews.jinbi) {
-                        console.log(`看文章：获得${$.donenews.jinbi}金币，今日获得${$.donenews.day_jinbi}金币\n`);
-                        $.message += `【看文章】：获得${$.donenews.jinbi}金币，今日获得${$.donenews.day_jinbi}金币\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//观看视频
-async function sp() {
-    console.log(`观看视频：开始执行\n`);
-    $.message += `【观看视频】：开始执行\n`;
-    mini_pos = 0
-    c_type = 1
-    tid = 9
-    pos = 1
-    await chuansj()
-    await callback()
-}
-//激活广告
-function admobile_show(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/admobile_show?`,
-                headers: header,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 激活广告🚩: ${data}`);
-                    $.admobile_show = JSON.parse(data);
-                    if ($.admobile_show.code == 1) {
-                        ad_id = $.admobile_show.ad_id
-                        await admobile_click() //点击广告
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//点击广告
-function admobile_click(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/admobile_click?`,
-                headers: header,
-                body: `ad_id=${ad_id}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 点击广告🚩: ${data}`);
-                    $.admobile_click = JSON.parse(data);
-                    if ($.admobile_click.code == 1) {
-                        nonce_str = $.admobile_click.nonce_str
-                        await admobile_done() //广告奖励
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//广告奖励
-function admobile_done(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/admobile_done?`,
-                headers: header,
-                body: `nonce_str=${nonce_str}&ad_id=${ad_id}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 广告奖励🚩: ${data}`);
-                    $.admobile_done = JSON.parse(data);
-                    if ($.admobile_done.code == 1) {
-                        console.log(`广告奖励：获得${$.admobile_done.jinbi}金币\n`);
-                        $.message += `【广告奖励】：获得${$.admobile_done.jinbi}金币\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
-    })
-}
-//提现页
-function tixian_html(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/tixian_html?`,
-                headers: header,
-            }
-            $.get(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 提现页🚩: ${data}`);
-                    $.tixian_html = JSON.parse(data);
-                    if ($.tixian_html.tixian_html) {
-                        jine1 = $.tixian_html.tixian_html.find(item => item.jine === '0.3');
-                        jine2 = $.tixian_html.tixian_html.find(item => item.jine === '1');
-                        jine3 = $.tixian_html.tixian_html.find(item => item.jine === '50');
-                        jine4 = $.tixian_html.tixian_html.find(item => item.jine === '100');
-                        jine5 = $.tixian_html.tixian_html.find(item => item.jine === '200');
-                        day_tixian_tip = $.tixian_html.tixian_html.find(item => item.day_tixian_tip);
-                        fenshu3 = jine3.fenshu_tixian_tip.split('今日剩余')[1].split('份')[0]
-                        fenshu4 = jine4.fenshu_tixian_tip.split('今日剩余')[1].split('份')[0]
-                        fenshu5 = jine5.fenshu_tixian_tip.split('今日剩余')[1].split('份')[0]
-                        if (day_tixian_tip) {
-                            console.log(`提现查询：今日已提现\n`);
-                            $.message += `【提现查询】：今日已提现\n`;
-                        }
-                        console.log(`${jine3.jine}元：${jine3.fenshu_tixian_tip}\n${jine4.jine}元：${jine4.fenshu_tixian_tip}\n${jine5.jine}元：${jine5.fenshu_tixian_tip}\n`);
-                        $.message += `【${jine3.jine}元】：${jine3.fenshu_tixian_tip}\n【${jine4.jine}元】：${jine4.fenshu_tixian_tip}\n【${jine5.jine}元】：${jine5.fenshu_tixian_tip}\n`;
 
-                        if (!day_tixian_tip && ($.user.wx_username != "" || $.user.is_weixin == 1)) {
-                            if (CASH == 0.3 && $.user.day_jinbi >= 5000 && $.user.money >= CASH) {
-                                await tixian() //提现
-                            }
-                            if (CASH > 0.3 && CASH <= 200 && $.user.money >= CASH) {
-                                await tixian() //提现
-                            }
-                            if (CASH == 888) {
-                                if ($.user.money >= 200 && fenshu5 > 0) {
-                                    CASH = 200
-                                } else if ($.user.money >= 100 && fenshu4 > 0) {
-                                    CASH = 100
-                                } else if ($.user.money >= 50 && fenshu5 > 0) {
-                                    CASH = 50
-                                } else if ($.user.money > 0.3 && $.user.day_jinbi >= 5000) {
-                                    CASH = 0.3
-                                }
-                                if (CASH != 888) {
-                                    await tixian() //提现
-                                }
-                            }
-                        }
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
+function userInfo() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let userInfo ={
+    url: 'https://bububao.duoshoutuan.com/user/profile',
+    headers: JSON.parse(CookieVal),
+}
+   $.post(userInfo,async(error, response, data) =>{
+     const userinfo = JSON.parse(data)
+     if(response.statusCode == 200 && userinfo.code != -1){
+$.log('\n🎉模擬登陸成功\n')
+     notice += '🎉步步寶帳號: '+userinfo.username+'\n'+'🎉當前金幣: '+userinfo.jinbi+'💰 約'+userinfo.money+'元💸\n'
+    }else{
+     notice += '⚠️異常原因: '+userinfo.msg+'\n'
+           }
+          resolve()
     })
+   })
+  } 
+
+
+function signIn() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let signin ={
+    url: `https://bububao.duoshoutuan.com/user/sign`,
+    headers: JSON.parse(CookieVal),
 }
-//现金提现
-function tixian(timeout = 0) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let url = {
-                url: `https://bububao.duoshoutuan.com/user/tixian?`,
-                headers: header,
-                body: `tx=${CASH}&`,
-            }
-            $.post(url, async (err, resp, data) => {
-                try {
-                    if (logs) $.log(`${O}, 现金提现🚩: ${data}`);
-                    $.tixian = JSON.parse(data);
-                    if ($.tixian.code == 1) {
-                        console.log(`现金提现：${$.tixian.msg}\n`);
-                        $.message += `【现金提现】：${$.tixian.msg}\n`;
-                    }
-                } catch (e) {
-                    $.logErr(e, resp);
-                } finally {
-                    resolve()
-                }
-            })
-        }, timeout)
+   $.post(signin,async(error, response, data) =>{
+$.log('\n🔔開始签到\n')
+     const sign = JSON.parse(data)
+      if(sign.code == 1) {
+          $.log('\n🎉'+sign.msg+'簽到金幣+ '+sign.jinbi+'💰\n')
+      signInStr = sign.nonce_str
+          await signDouble()
+         }else{
+          $.log('\n🎉'+sign.msg+'\n')
+         }
+          resolve()
     })
+   })
+  } 
+
+function signDouble() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let signdouble ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${signInStr}&tid=2&pos=1&`,
 }
-// prettier-ignore
-function Env(t, e) {
-    class s {
-        constructor(t) {
-            this.env = t
-        }
-        send(t, e = "GET") {
-            t = "string" == typeof t ? {
-                url: t
-            } : t;
-            let s = this.get;
-            return "POST" === e && (s = this.post), new Promise((e, i) => {
-                s.call(this, t, (t, s, r) => {
-                    t ? i(t) : e(s)
-                })
-            })
-        }
-        get(t) {
-            return this.send.call(this.env, t)
-        }
-        post(t) {
-            return this.send.call(this.env, t, "POST")
-        }
-    }
-    return new class {
-        constructor(t, e) {
-            this.name = t, this.http = new s(this), this.data = null, this.dataFile = "box.dat", this.logs = [], this.isMute = !1, this.isNeedRewrite = !1, this.logSeparator = "\n", this.startTime = (new Date).getTime(), Object.assign(this, e), this.log(``, `\ud83d\udd14${this.name}, \u5f00\u59cb!`)
-        }
-        isNode() {
-            return "undefined" != typeof module && !!module.exports
-        }
-        isQuanX() {
-            return "undefined" != typeof $task
-        }
-        isSurge() {
-            return "undefined" != typeof $httpClient && "undefined" == typeof $loon
-        }
-        isLoon() {
-            return "undefined" != typeof $loon
-        }
-        toObj(t, e = null) {
-            try {
-                return JSON.parse(t)
-            } catch {
-                return e
-            }
-        }
-        toStr(t, e = null) {
-            try {
-                return JSON.stringify(t)
-            } catch {
-                return e
-            }
-        }
-        getjson(t, e) {
-            let s = e;
-            const i = this.getdata(t);
-            if (i) try {
-                s = JSON.parse(this.getdata(t))
-            } catch {}
-            return s
-        }
-        setjson(t, e) {
-            try {
-                return this.setdata(JSON.stringify(t), e)
-            } catch {
-                return !1
-            }
-        }
-        getScript(t) {
-            return new Promise(e => {
-                this.get({
-                    url: t
-                }, (t, s, i) => e(i))
-            })
-        }
-        runScript(t, e) {
-            return new Promise(s => {
-                let i = this.getdata("@chavy_boxjs_userCfgs.httpapi");
-                i = i ? i.replace(/\n/g, ``).trim() : i;
-                let r = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");
-                r = r ? 1 * r : 20, r = e && e.timeout ? e.timeout : r;
-                const [o, h] = i.split("@"), a = {
-                    url: `http://${h}/v1/scripting/evaluate`,
-                    body: {
-                        script_text: t,
-                        mock_type: "cron",
-                        timeout: r
-                    },
-                    headers: {
-                        "X-Key": o,
-                        Accept: "*/*"
-                    }
-                };
-                this.post(a, (t, e, i) => s(i))
-            }).catch(t => this.logErr(t))
-        }
-        loaddata() {
-            if (!this.isNode()) return {}; {
-                this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path");
-                const t = this.path.resolve(this.dataFile),
-                    e = this.path.resolve(process.cwd(), this.dataFile),
-                    s = this.fs.existsSync(t),
-                    i = !s && this.fs.existsSync(e);
-                if (!s && !i) return {}; {
-                    const i = s ? t : e;
-                    try {
-                        return JSON.parse(this.fs.readFileSync(i))
-                    } catch (t) {
-                        return {}
-                    }
-                }
-            }
-        }
-        writedata() {
-            if (this.isNode()) {
-                this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path");
-                const t = this.path.resolve(this.dataFile),
-                    e = this.path.resolve(process.cwd(), this.dataFile),
-                    s = this.fs.existsSync(t),
-                    i = !s && this.fs.existsSync(e),
-                    r = JSON.stringify(this.data);
-                s ? this.fs.writeFileSync(t, r) : i ? this.fs.writeFileSync(e, r) : this.fs.writeFileSync(t, r)
-            }
-        }
-        lodash_get(t, e, s) {
-            const i = e.replace(/\[(\d+)\]/g, ".$1").split(".");
-            let r = t;
-            for (const t of i)
-                if (r = Object(r)[t], void 0 === r) return s;
-            return r
-        }
-        lodash_set(t, e, s) {
-            return Object(t) !== t ? t : (Array.isArray(e) || (e = e.toString().match(/[^.[\]]+/g) || []), e.slice(0, -1).reduce((t, s, i) => Object(t[s]) === t[s] ? t[s] : t[s] = Math.abs(e[i + 1]) >> 0 == +e[i + 1] ? [] : {}, t)[e[e.length - 1]] = s, t)
-        }
-        getdata(t) {
-            let e = this.getval(t);
-            if (/^@/.test(t)) {
-                const [, s, i] = /^@(.*?)\.(.*?)$/.exec(t), r = s ? this.getval(s) : ``;
-                if (r) try {
-                    const t = JSON.parse(r);
-                    e = t ? this.lodash_get(t, i, ``) : e
-                } catch (t) {
-                    e = ``
-                }
-            }
-            return e
-        }
-        setdata(t, e) {
-            let s = !1;
-            if (/^@/.test(e)) {
-                const [, i, r] = /^@(.*?)\.(.*?)$/.exec(e), o = this.getval(i), h = i ? "null" === o ? null : o || "{}" : "{}";
-                try {
-                    const e = JSON.parse(h);
-                    this.lodash_set(e, r, t), s = this.setval(JSON.stringify(e), i)
-                } catch (e) {
-                    const o = {};
-                    this.lodash_set(o, r, t), s = this.setval(JSON.stringify(o), i)
-                }
-            } else s = this.setval(t, e);
-            return s
-        }
-        getval(t) {
-            return this.isSurge() || this.isLoon() ? $persistentStore.read(t) : this.isQuanX() ? $prefs.valueForKey(t) : this.isNode() ? (this.data = this.loaddata(), this.data[t]) : this.data && this.data[t] || null
-        }
-        setval(t, e) {
-            return this.isSurge() || this.isLoon() ? $persistentStore.write(t, e) : this.isQuanX() ? $prefs.setValueForKey(t, e) : this.isNode() ? (this.data = this.loaddata(), this.data[e] = t, this.writedata(), !0) : this.data && this.data[e] || null
-        }
-        initGotEnv(t) {
-            this.got = this.got ? this.got : require("got"), this.cktough = this.cktough ? this.cktough : require("tough-cookie"), this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar, t && (t.headers = t.headers ? t.headers : {}, void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar))
-        }
-        get(t, e = (() => {})) {
-            t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"]), this.isSurge() || this.isLoon() ? (this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
-                "X-Surge-Skip-Scripting": !1
-            })), $httpClient.get(t, (t, s, i) => {
-                !t && s && (s.body = i, s.statusCode = s.status), e(t, s, i)
-            })) : this.isQuanX() ? (this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
-                hints: !1
-            })), $task.fetch(t).then(t => {
-                const {
-                    statusCode: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                } = t;
-                e(null, {
-                    status: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                }, o)
-            }, t => e(t))) : this.isNode() && (this.initGotEnv(t), this.got(t).on("redirect", (t, e) => {
-                try {
-                    if (t.headers["set-cookie"]) {
-                        const s = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();
-                        this.ckjar.setCookieSync(s, null), e.cookieJar = this.ckjar
-                    }
-                } catch (t) {
-                    this.logErr(t)
-                }
-            }).then(t => {
-                const {
-                    statusCode: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                } = t;
-                e(null, {
-                    status: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                }, o)
-            }, t => {
-                const {
-                    message: s,
-                    response: i
-                } = t;
-                e(s, i, i && i.body)
-            }))
-        }
-        post(t, e = (() => {})) {
-            if (t.body && t.headers && !t.headers["Content-Type"] && (t.headers["Content-Type"] = "application/x-www-form-urlencoded"), t.headers && delete t.headers["Content-Length"], this.isSurge() || this.isLoon()) this.isSurge() && this.isNeedRewrite && (t.headers = t.headers || {}, Object.assign(t.headers, {
-                "X-Surge-Skip-Scripting": !1
-            })), $httpClient.post(t, (t, s, i) => {
-                !t && s && (s.body = i, s.statusCode = s.status), e(t, s, i)
-            });
-            else if (this.isQuanX()) t.method = "POST", this.isNeedRewrite && (t.opts = t.opts || {}, Object.assign(t.opts, {
-                hints: !1
-            })), $task.fetch(t).then(t => {
-                const {
-                    statusCode: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                } = t;
-                e(null, {
-                    status: s,
-                    statusCode: i,
-                    headers: r,
-                    body: o
-                }, o)
-            }, t => e(t));
-            else if (this.isNode()) {
-                this.initGotEnv(t);
-                const {
-                    url: s,
-                    ...i
-                } = t;
-                this.got.post(s, i).then(t => {
-                    const {
-                        statusCode: s,
-                        statusCode: i,
-                        headers: r,
-                        body: o
-                    } = t;
-                    e(null, {
-                        status: s,
-                        statusCode: i,
-                        headers: r,
-                        body: o
-                    }, o)
-                }, t => {
-                    const {
-                        message: s,
-                        response: i
-                    } = t;
-                    e(s, i, i && i.body)
-                })
-            }
-        }
-        time(t) {
-            let e = {
-                "M+": (new Date).getMonth() + 1,
-                "d+": (new Date).getDate(),
-                "H+": (new Date).getHours(),
-                "m+": (new Date).getMinutes(),
-                "s+": (new Date).getSeconds(),
-                "q+": Math.floor(((new Date).getMonth() + 3) / 3),
-                S: (new Date).getMilliseconds()
-            };
-            /(y+)/.test(t) && (t = t.replace(RegExp.$1, ((new Date).getFullYear() + ``).substr(4 - RegExp.$1.length)));
-            for (let s in e) new RegExp("(" + s + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length ? e[s] : ("00" + e[s]).substr((`` + e[s]).length)));
-            return t
-        }
-        msg(e = t, s = ``, i = ``, r) {
-            const o = t => {
-                if (!t) return t;
-                if ("string" == typeof t) return this.isLoon() ? t : this.isQuanX() ? {
-                    "open-url": t
-                } : this.isSurge() ? {
-                    url: t
-                } : void 0;
-                if ("object" == typeof t) {
-                    if (this.isLoon()) {
-                        let e = t.openUrl || t.url || t["open-url"],
-                            s = t.mediaUrl || t["media-url"];
-                        return {
-                            openUrl: e,
-                            mediaUrl: s
-                        }
-                    }
-                    if (this.isQuanX()) {
-                        let e = t["open-url"] || t.url || t.openUrl,
-                            s = t["media-url"] || t.mediaUrl;
-                        return {
-                            "open-url": e,
-                            "media-url": s
-                        }
-                    }
-                    if (this.isSurge()) {
-                        let e = t.url || t.openUrl || t["open-url"];
-                        return {
-                            url: e
-                        }
-                    }
-                }
-            };
-            this.isMute || (this.isSurge() || this.isLoon() ? $notification.post(e, s, i, o(r)) : this.isQuanX() && $notify(e, s, i, o(r)));
-            let h = [``, "==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="];
-            h.push(e), s && h.push(s), i && h.push(i), console.log(h.join("\n")), this.logs = this.logs.concat(h)
-        }
-        log(...t) {
-            t.length > 0 && (this.logs = [...this.logs, ...t]), console.log(t.join(this.logSeparator))
-        }
-        logErr(t, e) {
-            const s = !this.isSurge() && !this.isQuanX() && !this.isLoon();
-            s ? this.log(``, `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t.stack) : this.log(``, `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t)
-        }
-        wait(t) {
-            return new Promise(e => setTimeout(e, t))
-        }
-        done(t = {}) {
-            const e = (new Date).getTime(),
-                s = (e - this.startTime) / 1e3;
-            this.log(``, `\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${s} \u79d2`), this.log(), (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t)
-        }
-    }(t, e)
+   $.post(signdouble,async(error, response, data) =>{
+     const signin2 = JSON.parse(data)
+$.log('\n🔔開始領取每日觀看獎勵\n')
+      if(signin2.code == 1) {
+          $.log('\n🎉簽到翻倍成功\n')
+           }else{
+          $.log('\n⚠️簽到翻倍失敗敗:'+signin2.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function zaoWanDkInfo() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let zaowandkinfo ={
+    url: `https://bububao.duoshoutuan.com/mini/dk_info`,
+    headers: JSON.parse(CookieVal),
 }
+   $.post(zaowandkinfo,async(error, response, data) =>{
+     const zwdkinfo = JSON.parse(data)
+      if(zwdkinfo.code == 1 && zwdkinfo.is_dk == 0) {
+      nowTime = zwdkinfo.now_time
+      title1 = zwdkinfo.title1
+      title2 = zwdkinfo.title2
+          await zaoWanDk()
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function zaoWanDk() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let zaowandk ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=3&c_type=1&`,
+}
+   $.post(zaowandk,async(error, response, data) =>{
+     const zwdk = JSON.parse(data)
+      if(zwdk.code == 1) {
+      zwdkStr = zwdk.nonce_str
+          await $.wait(30000)
+          await dkClick()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function dkClick() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let dkclick ={
+    url: `https://bububao.duoshoutuan.com/mini/dk_click`,
+    headers: JSON.parse(CookieVal),
+    body: `now_time=${nowTime}&`,
+}
+   $.post(dkclick,async(error, response, data) =>{
+     const clickdk = JSON.parse(data)
+      if(clickdk.code == 1) {
+          $.log('\n🎉'+clickdk.msg+'+ '+clickdk.jinbi+'💰\n')
+          $.msg(`${title1}`,`${title2}`,'')
+          await checkWaterNum()
+           }else{
+          $.log('\n⚠️'+clickdk.msg)
+          await checkWaterNum()
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function guaList() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let gualist ={
+    url: `https://bububao.duoshoutuan.com/gua/gualist?`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(gualist,async(error, response, data) =>{
+$.log('\n🔔開始查詢刮刮卡ID\n')
+     const guaid = JSON.parse(data)
+      if(guaid.ka > 0){
+      for (guaId of guaid.list)
+      if(guaId.is_ad == 0){
+      GID = guaId.id
+$.log('\n🔔查詢刮刮卡ID成功,5s後開始查询刮卡签名\n')
+$.log('\nGID: '+GID+'\n')
+          await $.wait(5000)
+          await guaDet()
+         }}else{
+$.log('\n⚠️刮刮卡已用完,請明天再刮吧！\n')
+          await checkWaterNum()
+        }
+
+          resolve()
+    })
+   })
+  } 
+
+function guaDet() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let guadet ={
+    url: `https://bububao.duoshoutuan.com/gua/guadet?`,
+    headers: JSON.parse(CookieVal),
+    body: `gid=${GID}&`
+}
+   $.post(guadet,async(error, response, data) =>{
+$.log('\n🔔開始查詢刮卡簽名\n')
+     const guasign= JSON.parse(data)
+      if(response.statusCode == 200) {
+$.log('\n🔔查詢刮卡簽名成功\n')
+      SIGN = guasign.sign
+      GLID = guasign.glid
+$.log('\nsign: '+SIGN+'\n')
+$.log('\nglid: '+GLID+'\n')
+          await guaPost()
+         }
+          resolve()
+    })
+   })
+  } 
+
+function guaPost() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let guapost ={
+    url: `https://bububao.duoshoutuan.com/gua/guapost?`,
+    headers: JSON.parse(CookieVal),
+    body: `sign=${SIGN}&gid=${GID}&glid=${GLID}&`
+}
+   $.post(guapost,async(error, response, data) =>{
+$.log('\n🔔開始刮卡\n')
+     const guaka= JSON.parse(data)
+      if(typeof guaka.jf === 'number') {
+      guaStr = guaka.nonce_str
+          $.log('\n🎉刮卡成功\n恭喜您刮出'+guaka.tp+'張相同圖案\n金幣+ '+guaka.jf+'\n等待45s後開始翻倍刮卡獎勵')
+          await $.wait(45000)
+          await guaDouble()
+         }
+          resolve()
+    })
+   })
+  } 
+
+
+function guaDouble() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let guadouble ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${guaStr}&tid=6&pos=1&`,
+}
+   $.post(guadouble,async(error, response, data) =>{
+     const guaka2 = JSON.parse(data)
+$.log('\n🔔開始領取刮卡翻倍獎勵\n')
+      if(guaka2.code == 1) {
+          $.log('\n🎉刮卡翻倍成功,等待2s後查詢下一張刮刮卡ID\n')
+          await $.wait(2000)
+          //await guaList()
+           }else{
+          $.log('\n⚠️刮卡翻倍失敗:'+guaka2.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function checkWaterNum() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkwaternum ={
+    url: `https://bububao.duoshoutuan.com/mini/water_info`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(checkwaternum,async(error, response, data) =>{
+$.log('\n🔔開始查詢喝水杯數\n')
+     const waternum = JSON.parse(data)
+      if(waternum.code == 1 && waternum.day_num < 7) {
+      waterNum = waternum.day_num
+      if(waternum.is_sp == 1){
+          $.log('\n🎉喝水前需要看廣告喔！,1s後開始看廣告\n')
+          await $.wait(1000)
+          await checkWaterSp()
+         }else{
+          $.log('\n🎉查詢成功,1s後領取喝水獎勵\n')
+          await $.wait(1000)
+          await waterClick()
+         }}else{
+          $.log('\n⚠️喝水失敗: 今日喝水已上限\n')
+         }
+          resolve()
+    })
+   })
+  } 
+
+function checkWaterSp() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checksp ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=2&c_type=1&`,
+}
+   $.post(checksp,async(error, response, data) =>{
+     const sp = JSON.parse(data)
+      if(sp.code == 1) {
+      waterSpStr = sp.nonce_str
+          await WaterSp()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function WaterSp() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let watersp ={
+    url: `https://bububao.duoshoutuan.com/mini/water_sp`,
+    headers: JSON.parse(CookieVal),
+    body: `day_num=${waterNum}&`,
+}
+   $.post(watersp,async(error, response, data) =>{
+     const spwater = JSON.parse(data)
+      if(spwater.code == 1) {
+          $.log('\n🎉正在觀看喝水廣告, 30後領取喝水獎勵\n')
+          await $.wait(30000)
+          await waterClick()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function waterClick() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let waterclick ={
+    url: `https://bububao.duoshoutuan.com/mini/water_click`,
+    headers: JSON.parse(CookieVal),
+    body: `day_num=0${waterNum}&`,
+}
+   $.post(waterclick,async(error, response, data) =>{
+     const clickwater = JSON.parse(data)
+$.log('\n🔔開始領取喝水獎勵\n')
+      if(clickwater.code == 1) {
+          $.log('\n🎉'+clickwater.msg+'喝水金幣+ '+clickwater.jinbi+'💰\n')
+           }else{
+          $.log('\n⚠️喝水失敗:'+clickwater.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function sleepStatus() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let sleepstatus ={
+    url: `https://bububao.duoshoutuan.com/mini/sleep_info`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(sleepstatus,async(error, response, data) =>{
+$.log('\n🔔開始查詢睡覺狀態\n')
+     const slpstatus = JSON.parse(data)
+      if(slpstatus.code == 1) {
+      if(slpstatus.is_lq == 1 && now.getHours() >= 8 && now.getHours() <= 18) {
+      sleepStr = slpstatus.nonce_str
+      sleepId = slpstatus.taskid
+     }else{
+$.log('🔔大白天的就不要睡覺啦！')
+      }
+      if(slpstatus.is_sleep == 0 && slpstatus.is_lq == 1 && now.getHours() >= 20) {
+$.log('🔔都幾點了，還不睡？5s後開始睡覺！')
+          await $.wait(5000)
+          await sleepStart()
+         }else if((slpstatus.is_sleep == 1 || slpstatus.is_sleep == 0)&& slpstatus.is_lq == 0 && now.getHours() >= 8 && now.getHours() <= 12){
+$.log('🔔都幾點了，還不起？5s後準備起床！')
+          await $.wait(5000)
+          await sleepEnd()
+         }else if(slpstatus.is_sleep == 0 && slpstatus.is_lq == 1 && now.getHours() >= 8 && now.getHours() <= 12){
+          await sleepDone()
+         }else if(slpstatus.is_sleep == 1 && slpstatus.is_lq == 1 && now.getHours() >= 22){
+          $.log('⚠️睡覺的時候不要玩手機！！！')
+         }else if(slpstatus.is_sleep == 0 &&
+now.getHours() >= 18){
+          $.log('😘這麼早就準備睡覺了嗎？是身體不舒服嗎？要保重身體呀！')
+         }}
+          resolve()
+    })
+   })
+  } 
+
+
+
+function sleepStart() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let sleepstart ={
+    url: `https://bububao.duoshoutuan.com/mini/sleep_start`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(sleepstart,async(error, response, data) =>{
+     const startsleep = JSON.parse(data)
+$.log('\n🔔開始睡覺\n')
+      if(startsleep.code == 1) {
+          $.log('\n🎉睡覺成功！早睡早起身體好！\n')
+           }else{
+          $.log('\n⚠️睡覺失敗敗:'+startsleep.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function sleepEnd() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let sleepend ={
+    url: `https://bububao.duoshoutuan.com/mini/sleep_end`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(sleepend,async(error, response, data) =>{
+     const endsleep = JSON.parse(data)
+$.log('\n🔔開始起床\n')
+      if(endsleep.code == 1) {
+          $.log('\n🎉起床了！別睡了！\n')
+          await sleepStatus()
+           }else{
+          $.log('\n⚠️起床失敗:'+endsleep.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function sleepDone() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let sleepdone ={
+    url: `https://bububao.duoshoutuan.com/mini/sleep_done`,
+    headers: JSON.parse(CookieVal),
+    body: `taskid=${sleepId}&nonce_str=${sleepStr}&`
+}
+   $.post(sleepdone,async(error, response, data) =>{
+     const donesleep = JSON.parse(data)
+$.log('\n🔔開始領取睡覺金幣\n')
+      if(donesleep.code == 1) {
+          $.log('\n🎉'+donesleep.msg+'金幣+ '+donesleep.jinbi+'💰\n')
+           }else{
+          $.log('\n⚠️領取睡覺金幣失敗敗:'+donesleep.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function clickTaskStatus() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let clicktaskstatus ={
+    url: `https://bububao.duoshoutuan.com/user/renwu`,
+    headers: JSON.parse(CookieVal),
+    body: `idfa=${JSON.parse(CookieVal)['idfa']}&`,
+}
+   $.post(clicktaskstatus,async(error, response, data) =>{
+     const clicktask = JSON.parse(data)
+      if(clicktask.first.admobile_st != 2) {
+$.log('\n🔔開始查詢每日點擊任務狀態\n')
+          await checkDailyClickAdId()
+         }else{
+          $.log('\n⚠️每日點擊廣告任務已上限\n')
+         }
+       resolve()
+    })
+   })
+  } 
+
+function watchTaskStatus() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let watchtaskstatus ={
+    url: `https://bububao.duoshoutuan.com/user/renwu`,
+    headers: JSON.parse(CookieVal),
+    body: `idfa=${JSON.parse(CookieVal)['idfa']}&`,
+}
+   $.post(watchtaskstatus,async(error, response, data) =>{
+     const watchtask = JSON.parse(data)
+$.log('\n🔔開始查詢每日觀看廣告任務狀態\n')
+       if(watchtask.v_st != 2) {
+$.log('\n🔔每日觀看廣告任務狀態查詢成功,1s後查詢每日觀看廣告ID\n')
+          await $.wait(1000)
+          await checkDailyWatchAdId()
+         }else{
+          $.log('\n⚠️每日看廣告任務已上限\n')
+          await checkWaterNum()
+         }
+       resolve()
+    })
+   })
+  } 
+
+
+function checkDailyWatchAdId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkdailywatchadid ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=0&c_type=1&`,
+}
+   $.post(checkdailywatchadid,async(error, response, data) =>{
+$.log('\n🔔開始查詢每日觀看廣告ID\n')
+     const dailywatchid = JSON.parse(data)
+      if(dailywatchid.code == 1) {
+      dailyWatchStr = dailywatchid.nonce_str
+         // $.log('\n'+dailyWatchStr+'\n')
+          $.log('\n🎉查詢成功,30s後領取獎勵\n')
+          await $.wait(30000)
+          await DailyWatchAd()
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function DailyWatchAd() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let dailywatchad ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${dailyWatchStr}&tid=9&pos=1&`,
+}
+   $.post(dailywatchad,async(error, response, data) =>{
+     const dailywatch = JSON.parse(data)
+$.log('\n🔔開始領取每日觀看獎勵\n')
+      if(dailywatch.code == 1) {
+          $.log('\n🎉每日觀看獎勵領取成功,5m(300s)後查詢下一次廣告\n')
+          for(let i=1;i<=60;i++){
+              (function(){
+                  setTimeout(() => {
+                    $.log('\n⏱請等待'+(60-i)*5+'s後查詢下一次廣告\n')
+                  }, 5000*i);
+              })()
+          }
+          await $.wait(300000)
+          await watchTaskStatus()
+           }else{
+          $.log('\n⚠️每日獎勵領取失敗:'+dailywatch.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function checkDailyClickAdId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkdailyclickadid ={
+    url: `https://bububao.duoshoutuan.com/user/admobile_show`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(checkdailyclickadid,async(error, response, data) =>{
+$.log('\n🔔開始查詢每日廣告ID\n')
+     const dailyclickid = JSON.parse(data)
+      if(dailyclickid.code == 1) {
+      dailyClickAdId = dailyclickid.ad_id
+         // $.log('\n'+dailyClickAdId+'\n')
+          $.log('\n🎉查詢成功,1s後領取獎勵\n')
+          await $.wait(1000)
+          await checkDailyClickAd()
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function checkDailyClickAd() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkdailyclickad ={
+    url: `https://bububao.duoshoutuan.com/user/admobile_click`,
+    headers: JSON.parse(CookieVal),
+    body: `ad_id=${dailyClickAdId}&`,
+}
+   $.post(checkdailyclickad,async(error, response, data) =>{
+$.log('\n🔔開始查詢每日廣告點擊ID\n')
+     const dailyclick = JSON.parse(data)
+      if(dailyclick.code == 1) {
+      dailyClickStr = dailyclick.nonce_str
+         // $.log('\n'+dailyClickStr+'\n')
+          $.log('\n🎉查詢成功,5s後返回領取獎勵\n')
+          await $.wait(5000)
+          await DailyClickAd()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function DailyClickAd() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let dailyclickad ={
+    url: `https://bububao.duoshoutuan.com/user/admobile_done`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${dailyClickStr}&ad_id=${dailyClickAdId}&`,
+}
+   $.post(dailyclickad,async(error, response, data) =>{
+     const dailyclick = JSON.parse(data)
+$.log('\n🔔開始領取每日點擊獎勵\n')
+      if(dailyclick.code == 1) {
+          $.log('\n🎉每日點擊獎勵領取成功,1s後查詢下一次廣告ID\n')
+          await $.wait(1000)
+          await clickTaskStatus()
+           }else{
+          $.log('\n⚠️每日點擊領取失敗:'+dailyclick.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function checkHomeJin() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkhomejin ={
+    url: 'https://bububao.duoshoutuan.com/user/home',
+    headers: JSON.parse(CookieVal),
+}
+   $.post(checkhomejin,async(error, response, data) =>{
+     const checkhomejb = JSON.parse(data)
+     if(checkhomejb.right_st == 0){
+          await homeJin()
+         }else if(checkhomejb.right_st == 1){
+$.log('\n🔔開始查詢首頁金幣狀態\n')
+$.log('\n🔔等待'+(checkhomejb.right_time+5)+'s领取首页金币')
+          await $.wait(checkhomejb.right_time*1000+5000)
+          await homeJin()
+         }else if(checkhomejb.right_st == 2 && checkhomejb.jindan_show == 0){
+$.log('\n🔔開始查詢首頁金蛋狀態\n')
+$.log('\n🔔等待'+(checkhomejb.jindan_djs+5)+'s领取金蛋獎勵')
+          await $.wait(checkhomejb.jindan_djs*1000+5000)
+          await checkGoldEggId()
+         }else if(checkhomejb.right_st == 2 && checkhomejb.jindan_show == 1){
+$.log('\n🔔開始查詢首頁金蛋狀態\n')
+$.log('\n🔔等待'+(checkhomejb.jindan_djs+5)+'s领取金蛋獎勵')
+          await $.wait(checkhomejb.jindan_djs*1000+5000)
+          await checkGoldEggId()
+         }else if(checkhomejb.right_st == 2 && checkhomejb.jindan_show == 2 && checkhomejb.hb_st == 0){
+$.log('\n🔔開始查詢首頁紅包狀態\n')
+          await checkRedBagId()
+         }else if(checkhomejb.right_st == 2 && checkhomejb.jindan_show == 2 && checkhomejb.hb_st == 1){
+$.log('\n🔔開始查詢首頁紅包狀態\n')
+$.log('\n🔔等待'+(checkhomejb.hb_time+5)+'s領取首頁紅包')
+time = checkhomejb.hb_time+5
+          for(let i=1;i<=(time/5);i++){
+              (function(){
+                  setTimeout(() => {
+                    $.log('\n⏱請等待'+((time/5-i)*5)+'s後領取首頁紅包\n')
+                  }, 5000*i);
+              })()
+          }
+          await $.wait(checkhomejb.hb_time*1000+5000)
+          await checkRedBagId()
+         }else if(checkhomejb.right_st == 2 && checkhomejb.jindan_show == 2 && checkhomejb.hb_st == 2){
+$.log('\n🔔首頁金幣狀態:'+checkhomejb.right_text+'\n🔔首頁紅包狀態:'+checkhomejb.hb_text+'\n🔔首頁金蛋狀態:'+checkhomejb.jindan_text+'\n')
+          await checkWaterNum()
+         }
+          resolve()
+    })
+   })
+  } 
+
+
+function homeJin() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let homejin ={
+    url: 'https://bububao.duoshoutuan.com/user/homejin',
+    headers: JSON.parse(CookieVal),
+}
+   $.post(homejin,async(error, response, data) =>{
+     const homejb = JSON.parse(data)
+     if(homejb.code == 1){
+$.log('\n🔔開始領取首頁金幣\n')
+          $.log('\n🎉首頁金幣:'+homejb.msg+'\n金幣+ '+homejb.jinbi+'等待30s後開始翻倍金幣\n')
+         homeJinStr = homejb.nonce_str
+          //$.log('\n'+homeJinStr+'\n')
+          await $.wait(30000)
+          await homeJinCallBack()
+    }else{
+          $.log('\n⚠️首頁金幣失敗:'+homejb.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function homeJinCallBack() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let homejincallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${homeJinStr}&tid=21&pos=1&`,
+}
+   $.post(homejincallback,async(error, response, data) =>{
+     const hmjcallback = JSON.parse(data)
+$.log('\n🔔開始翻倍首頁金幣\n')
+      if(hmjcallback.code == 1) {
+          $.log('\n🎉首頁金幣翻倍成功\n')
+          await checkHomeJin()
+           }else{
+          $.log('\n🔔首頁金幣翻倍失敗'+hmjcallback.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function checkRedBagId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkredbagid ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=0&c_type=2&`,
+}
+   $.post(checkredbagid,async(error, response, data) =>{
+$.log('\n🔔開始查詢首頁紅包ID\n')
+     const code = JSON.parse(data)
+      if(code.code == 1) {
+      redBagStr = code.nonce_str
+$.log('\n🔔查詢首頁紅包ID成功,等待30s後領取首頁紅包\n')
+          await $.wait(30000)
+          await redBagCallback()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function redBagCallback() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let redbagcallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${redBagStr}&tid=17&pos=1&`,
+}
+   $.post(redbagcallback,async(error, response, data) =>{
+     const redbag = JSON.parse(data)
+$.log('\n🔔開始領取首頁紅包\n')
+      if(redbag.code == 1) {
+          $.log('\n🎉首頁紅包領取成功\n')
+          await checkHomeJin()
+           }else{
+          $.log('\n⚠️首頁紅包領取失敗:'+redbag.msg+'\n')
+          await checkHomeJin()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function checkGoldEggId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkgoldeggid ={
+    url: `https://bububao.duoshoutuan.com/user/jindan_click`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(checkgoldeggid,async(error, response, data) =>{
+     const goldeggid = JSON.parse(data)
+      if(goldeggid.code == 1) {
+$.log('\n🔔金蛋ID data'+data)
+$.log('\n🔔開始查詢首頁金蛋ID\n')
+      goldEggStr = goldeggid.nonce_str
+          $.log('\n'+goldEggStr+'\n')
+      goldEggId = goldeggid.taskid
+          $.log('\n'+goldEggId+'\n')
+          await goldEggDone()
+           }else{
+          $.log('\n⚠️首頁金蛋失敗:'+goldeggid.msg+'\n')
+          await checkHomeJin()
+        }
+          resolve()
+    })
+   })
+  } 
+
+function goldEggDone() {
+return new Promise((resolve, reject) => {
+  let timestamp= Date.parse(new Date())/1000;
+  let goldeggdone ={
+    url: `https://bububao.duoshoutuan.com/user/jindan_done`,
+    headers: JSON.parse(CookieVal),
+    body: `taskid=${goldEggId}&clicktime=${timestamp}&donetime=${timestamp}+1000&nonce_str=${goldEggStr}&`
+}
+   $.post(goldeggdone,async(error, response, data) =>{
+     const goldegg2 = JSON.parse(data)
+      if(goldegg2.code == 1) {
+$.log('\n🔔開始領取首頁金蛋獎勵\n')
+          $.log('\n🎉首頁金蛋:'+goldegg2.msg+'\n金幣+ '+goldegg2.jinbi+'\n')
+          await goldEggCallback()
+           }else{
+          $.log('\n⚠️首頁金蛋失敗:'+goldegg2.msg+'\n')
+          await checkHomeJin()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function goldEggCallback() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let goldeggcallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${goldEggStr}&tid=5&pos=1&`,
+}
+   $.post(goldeggcallback,async(error, response, data) =>{
+     const goldeggback = JSON.parse(data)
+$.log('\n🔔開始翻倍首頁金蛋\n')
+      if(goldeggback.code == 1) {
+          $.log('\n🎉金蛋翻倍成功\n')
+          await checkHomeJin()
+           }else{
+          $.log('\n⚠️金蛋翻倍失敗:'+goldeggback.msg+'\n')
+          await checkHomeJin()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function helpStatus() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let helpstatus ={
+    url: `https://bububao.duoshoutuan.com/user/help_index`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(helpstatus,async(error, response, data) =>{
+     const help = JSON.parse(data)
+$.log('\n🔔開始查詢助力視頻狀態\n')
+      if(help.status == 0) {
+$.log('\n🔔查詢助力視頻狀態成功, 1s後獲取助力視頻ID\n')
+          await checkCode()
+           }else{
+$.log('\n🔔今日助力已上限,請明天再試!\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function checkCode() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkcode ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=5&c_type=1&`,
+}
+   $.post(checkcode,async(error, response, data) =>{
+     const code = JSON.parse(data)
+$.log('\n🔔開始查詢助力視頻ID\n')
+      if(code.code == 1) {
+      nonce_str = code.nonce_str
+$.log('\n🔔查詢助力視頻ID成功, 開始觀看助力視頻\n')
+          await helpClick()
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function helpClick() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let helpclick ={
+    url: `https://bububao.duoshoutuan.com/user/help_click`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${nonce_str}`,
+}
+   $.post(helpclick,async(error, response, data) =>{
+     const help = JSON.parse(data)
+      if(help.code == 1) {
+$.log('\n🔔開始觀看助力視頻, 60s後領取助力視頻獎勵\n')
+          await $.wait(60000)
+          $.log('\n🎉觀看助力視頻成功, 1s後領取金幣+ '+help.jinbi+'\n')
+          await callBack()
+           }else{
+          $.log('\n⚠️觀看助力視頻失敗: '+help.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function callBack() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let callback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${nonce_str}&tid=22&pos=1&`,
+}
+   $.post(callback,async(error, response, data) =>{
+     const back = JSON.parse(data)
+$.log('\n🔔開始領取助力視頻獎勵\n')
+      if(back.code == 1) {
+          $.log('\n🎉領取助力視頻獎勵成功,1s後查詢下一次助力視頻狀態\n')
+          await $.wait(1000)
+          await helpStatus()
+           }else{
+          $.log('\n⚠️助力視頻獎勵失敗:'+back.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function getNewsId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let getnewsid ={
+    url: 'https://bububao.duoshoutuan.com/user/news',
+    headers: JSON.parse(CookieVal),
+    body: `type_class=1&`
+}
+   $.post(getnewsid,async(error, response, data) =>{
+     const newsid = JSON.parse(data)
+     if(newsid.code == 1){
+       if(newsid.is_max == 0){
+          $.log('\n🔔開始查詢新聞ID\n')
+          newsStr = newsid.nonce_str
+          $.log('\n🎉新聞ID查詢成功,15s後領取閱讀獎勵\n')
+          await $.wait(15000)
+          await autoRead()
+          }else{
+          $.log('\n⚠️閱讀失敗: 今日閱讀已上限\n')
+          await checkLuckNum()
+         }}else{
+          $.log('\n⚠️查詢新聞ID失敗:'+newsid.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function autoRead() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let autoread ={
+    url: 'https://bububao.duoshoutuan.com/user/donenews',
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${newsStr}& `,
+}
+   $.post(autoread,async(error, response, data) =>{
+     const read = JSON.parse(data)
+      if(read.code == 1) {
+          $.log('\n🎉閱讀成功,金幣+ '+read.jinbi+'💰,開始查詢下一篇新聞ID\n')
+            await getNewsId()
+          }else{
+          $.log('\n⚠️閱讀失敗:'+data+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function checkLuckNum() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let lucknum ={
+    url: `https://bububao.duoshoutuan.com/user/lucky`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(lucknum,async(error, response, data) =>{
+     const num = JSON.parse(data)
+$.log('\n🔔開始查詢抽獎次數\n')
+      if(num.lucky_num != 0) {
+          $.log('\n🎉剩餘抽獎次數:'+num.lucky_num+'1s後開始抽獎\n')
+          await $.wait(1000)
+          await luckyClick()
+         }else if(num.lucky_num == 0) {
+          $.log('\n⚠️今日抽獎次數已用完,1s後查詢寶箱狀態\n')
+          await $.wait(1000)
+       for (box of num.lucky_box){
+          //$.log(box)
+          if (box != 2)
+          await luckyBox()
+          if (box == 2)
+          $.log('\n⚠️寶箱已開啟\n')
+         }
+       }
+          resolve()
+    })
+   })
+  } 
+
+function luckyClick() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let luckclick ={
+    url: `https://bububao.duoshoutuan.com/user/lucky_click`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(luckclick,async(error, response, data) =>{
+     const lucky = JSON.parse(data)
+$.log('\n🔔開始抽獎\n')
+      if(lucky.code == 1) {
+          $.log('\n🎉抽獎:'+lucky.msg+'\n金幣+ '+lucky.jinbi+'\n')
+         luckyStr = lucky.nonce_str
+          //$.log('\n'+luckyStr+'\n')
+      if(lucky.jinbi != 0) {
+          await $.wait(5000)
+          await luckyCallBack()
+         }else{
+          await checkLuckNum()
+         }
+       }
+          resolve()
+    })
+   })
+  } 
+
+
+function luckyCallBack() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let luckycallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${luckyStr}&tid=16&pos=1&`,
+}
+   $.post(luckycallback,async(error, response, data) =>{
+     const callback = JSON.parse(data)
+$.log('\n🔔開始翻倍抽獎\n')
+      if(callback.code == 1) {
+          $.log('\n🎉抽獎翻倍成功\n')
+          await $.wait(5000)
+          await checkLuckNum()
+           }else{
+          $.log('\n⚠️抽獎翻倍失敗:'+callback.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+function luckyBox() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let luckybox ={
+    url: `https://bububao.duoshoutuan.com/user/lucky_box`,
+    headers: JSON.parse(CookieVal),
+    body: `box=${getBoxId()}&`,
+}
+//$.log('\nlockyboxBODY:'+luckybox.body+'\n')
+   $.post(luckybox,async(error, response, data) =>{
+     const boxlucky = JSON.parse(data)
+$.log('\n🔔開始打開寶箱\n')
+      if(boxlucky.code == 1) {
+          $.log('🎉寶箱: '+boxlucky.msg+'\n金幣+ '+boxlucky.jinbi+'\n')
+         luckyBoxStr = boxlucky.nonce_str
+          $.log('\n🔔寶箱翻倍ID'+luckyBoxStr+'\n')
+          await $.wait(5000)
+          await luckyBoxCallBack()
+         }else{
+          $.log('\n⚠️寶箱失敗:'+boxlucky.msg+'\n')
+         }
+          resolve()
+    })
+   })
+  } 
+
+function luckyBoxCallBack() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let luckyboxcallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${luckyBoxStr}&tid=16&pos=1&`,
+}
+   $.post(luckyboxcallback,async(error, response, data) =>{
+     const boxcallback = JSON.parse(data)
+$.log('\n🔔開始翻倍寶箱\n')
+      if(boxcallback.code == 1) {
+          $.log('\n🎉寶箱翻倍成功\n')
+          await $.wait(1000)
+           }else{
+          $.log('\n⚠️寶箱翻倍失敗'+boxcallback.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+function getQuestionId() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let getquestionid ={
+    url: `https://bububao.duoshoutuan.com/mini/cy_info`,
+    headers: JSON.parse(CookieVal),
+}
+   $.post(getquestionid,async(error, response, data) =>{
+     const question = JSON.parse(data)
+      if(question.code == 1 && question.day_num != 0) {
+$.log('\n🔔開始查詢答題ID\n')
+         questionSite = question.site
+          $.log('\n🎉答題ID1⃣️: '+questionSite+'\n')
+         questionId = question.cy_id
+          $.log('\n🎉答題ID2⃣️: '+questionId+'\n')
+         spId = question.day_num
+          $.log('\n🎉答題視頻: '+spId+'\n')
+      if(question.is_sp == 1) {
+          await $.wait(5000)
+          await checkSp()
+         }else{
+          await answerQue()
+         }}else{
+          $.log('\n⚠️查詢答題ID成功,答題失敗: 今日答題已上限\n')
+         }
+          resolve()
+    })
+   })
+  } 
+
+function checkSp() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checksp ={
+    url: `https://bububao.duoshoutuan.com/user/chuansj`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_pos=1&c_type=1&`,
+}
+   $.post(checksp,async(error, response, data) =>{
+     const sp = JSON.parse(data)
+      if(sp.code == 1) {
+      spStr = sp.nonce_str
+          //$.log('\n'+spStr+'\n')
+          await $.wait(5000)
+          await cySp()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function cySp() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let cysp ={
+    url: `https://bububao.duoshoutuan.com/mini/cy_sp`,
+    headers: JSON.parse(CookieVal),
+    body: `day_num=${spId}&`,
+}
+   $.post(cysp,async(error, response, data) =>{
+     const sp = JSON.parse(data)
+      if(sp.code == 1) {
+         // $.log('\n'+sp.msg+'\n')
+          //await $.wait(5000)
+          await answerQue()
+           }
+          resolve()
+    })
+   })
+  } 
+
+function answerQue() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let answerque ={
+    url: `https://bububao.duoshoutuan.com/mini/cy_click`,
+    headers: JSON.parse(CookieVal),
+    body: `cy_id=${questionId}&site=${questionSite}&`,
+}
+   $.post(answerque,async(error, response, data) =>{
+     const answer = JSON.parse(data)
+$.log('\n🔔開始答題\n')
+      if(answer.code == 1) {
+          $.log('\n🎉答題: '+answer.msg+'\n金幣+ '+answer.jinbi+'\n')
+         answerStr = answer.nonce_str
+          $.log('\n🎉答題翻倍ID:'+answerStr+'\n')
+          await $.wait(5000)
+          await answerQueCallBack()
+         }else{
+          $.log('\n⚠️答題失敗: '+answer.msg+'\n')
+         }
+          resolve()
+    })
+   })
+  } 
+
+
+function answerQueCallBack() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let answerquecallback ={
+    url: `https://bububao.duoshoutuan.com/you/callback`,
+    headers: JSON.parse(CookieVal),
+    body: `nonce_str=${answerStr}&tid=18&pos=1&`,
+}
+   $.post(answerquecallback,async(error, response, data) =>{
+     const answerback = JSON.parse(data)
+$.log('\n🔔開始翻倍答題金幣\n')
+      if(answerback.code == 1) {
+          $.log('\n🎉答題金幣翻倍成功\n')
+          await $.wait(5000)
+          await getQuestionId()
+           }else{
+          $.log('\n⚠️答題金幣翻倍失敗:'+answerback.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function cashCheck() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let cashcheck ={
+    url: 'https://bububao.duoshoutuan.com/user/profile',
+    headers: JSON.parse(CookieVal),
+}
+   $.post(cashcheck,async(error, response, data) =>{
+     const cash = JSON.parse(data)
+     if(response.statusCode == 200 && cash.code != -1){
+if(cash.jinbi >= 500000){
+     tip = 50
+      await withDraw()
+     }else if(cash.day_jinbi > 5000){
+     tip = 0.3
+      await withDraw()
+     }
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+
+
+function withDraw() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let withdraw ={
+    url: `https://bububao.duoshoutuan.com/user/tixian?`,
+    headers: JSON.parse(CookieVal),
+    body: `tx=${tip}&`,
+}
+   $.post(withdraw,async(error, response, data) =>{
+$.log(data)
+     const draw = JSON.parse(data)
+      if(withdraw.code == 1) {
+           $.msg(draw.msg)
+          }else{
+           notice +=draw.tip+'\n'+draw.msg+'\n'
+          }
+          resolve()
+    })
+   })
+  } 
+
+
+
+
+
+
+
+function checkH5Id() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let checkh5id ={
+    url: `https://bububao.duoshoutuan.com/user/h5_list?`,
+    headers: JSON.parse(CookieVal),
+    body: `page=1&page_limit=50&`,
+}
+   $.post(checkh5id,async(error, response, data) =>{
+     const checkh5 = JSON.parse(data)
+      if(response.statusCode == 200){
+         for(ID of checkh5){
+          H5ID = ID.mini_id
+          $.log('\n'+H5ID+'\n')
+          await doTaskH5()
+         }
+        }
+      resolve()
+    })
+   })
+  } 
+
+
+function doTaskH5() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let dotaskh5 ={
+    url: `https://bububao.duoshoutuan.com/user/h5_news?`,
+    headers: JSON.parse(CookieVal),
+    body: `mini_id=${H5ID}&`,
+}
+   $.post(dotaskh5,async(error, response, data) =>{
+   $.post(dotaskh5,async(error, response, data) =>{
+     const doh5task = JSON.parse(data)
+$.log('\ndoTaskH5:'+data+'\n')
+      if(response.body.indexOf('nonce_str') != -1) {
+         H5Str = doh5task.nonce_str
+          $.log('\n'+H5Str+'\n')
+         H5TaskID = doh5task.taskid
+          $.log('\n'+H5TaskID+'\n')
+          //await $.wait(30000)
+          await upLoadTime2()
+           }else{
+          $.log('\n'+data+'\n')
+           }
+          resolve()
+    })
+   })})
+  } 
+
+function upLoadTime() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let uploadtime ={
+    url: `https://wapinformation.dfxwdc.com/wapreport/screen_show?encodedMsg=cWlkMTAyNjcJMTYxMDkxODY0MzAyMjkwNTYJbmV3cwllYXN0ZGF5X3dhcG5ld3MJanVuc2hpCWRmdHQtNzcxMjNkYWI3MC04YWFmCXRvdXRpYW8JaHR0cHM6Ly90b3V0aWFvLmVhc3RkYXkuY29tLwlqdW5zaGkJMQkxCTAJLy9taW5pLmVhc3RkYXkuY29tL21vYmlsZS8yMTAxMTYxMTU0MTE5NTU1NTE3NzcuaHRtbAl0b3V0aWFvCWp1bnNoaQ%3D%3D&_=1610918646639&jsonpcallback=Zepto${timestamp}`,
+    headers: {"Accept": "*/*","Accept-Encoding": "gzip, deflate, br","Accept-Language": "zh-cn","Connection": "keep-alive","Host": "wapunionstatis.dfxwdc.com","Referer": "https://toutiao.eastday.com/?qid=qid10267","User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",},
+    timeout: 30000,
+}
+   $.get(uploadtime,async(error, response, data) =>{
+$.log('\nupLoadTime:'+timestamp+'\n'+data+'\n')
+          await $.wait(30000)
+          await h5Done()
+          resolve()
+    })
+   })
+  } 
+
+function upLoadTime2() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let uploadtime ={
+    url: `https://api.clotfun.online/tiger/getConfig/a0d2cb8e06bd53b0530f8786624999db?hdggHtmlId=675`,
+    headers: {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148",},
+    timeout: 30000,
+}
+   $.get(uploadtime,async(error, response, data) =>{
+$.log('\nupLoadTime2:'+data+'\n')
+          await $.wait(30000)
+          await h5Done()
+          resolve()
+    })
+   })
+  } 
+
+
+
+function h5Done() {
+return new Promise((resolve, reject) => {
+  let timestamp=new Date().getTime();
+  let h5done ={
+    url: `https://bububao.duoshoutuan.com/user/h5_newsdone`,
+    headers: JSON.parse(CookieVal),
+    body: `taskid=${H5TaskID}&nonce_str=${H5Str}&`,
+    timeout: 30000,
+}
+   $.post(h5done,async(error, response, data) =>{
+     const doneh5 = JSON.parse(data)
+      if(doneh5.code == 1) {
+          $.log('\n看看賺成功, 金幣+ '+          $.log('\n'+doneh5.jinbi+'\n')+'\n')
+           }else{
+          $.log('\n'+doneh5.msg+'\n')
+           }
+          resolve()
+    })
+   })
+  } 
+
+
+function Env(t,e){class s{constructor(t){this.env=t}send(t,e="GET"){t="string"==typeof t?{url:t}:t;let s=this.get;return"POST"===e&&(s=this.post),new Promise((e,i)=>{s.call(this,t,(t,s,r)=>{t?i(t):e(s)})})}get(t){return this.send.call(this.env,t)}post(t){return this.send.call(this.env,t,"POST")}}return new class{constructor(t,e){this.name=t,this.http=new s(this),this.data=null,this.dataFile="box.dat",this.logs=[],this.isMute=!1,this.isNeedRewrite=!1,this.logSeparator="\n",this.startTime=(new Date).getTime(),Object.assign(this,e),this.log("",`\ud83d\udd14${this.name}, \u5f00\u59cb!`)}isNode(){return"undefined"!=typeof module&&!!module.exports}isQuanX(){return"undefined"!=typeof $task}isSurge(){return"undefined"!=typeof $httpClient&&"undefined"==typeof $loon}isLoon(){return"undefined"!=typeof $loon}toObj(t,e=null){try{return JSON.parse(t)}catch{return e}}toStr(t,e=null){try{return JSON.stringify(t)}catch{return e}}getjson(t,e){let s=e;const i=this.getdata(t);if(i)try{s=JSON.parse(this.getdata(t))}catch{}return s}setjson(t,e){try{return this.setdata(JSON.stringify(t),e)}catch{return!1}}getScript(t){return new Promise(e=>{this.get({url:t},(t,s,i)=>e(i))})}runScript(t,e){return new Promise(s=>{let i=this.getdata("@chavy_boxjs_userCfgs.httpapi");i=i?i.replace(/\n/g,"").trim():i;let r=this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout");r=r?1*r:20,r=e&&e.timeout?e.timeout:r;const[o,h]=i.split("@"),a={url:`http://${h}/v1/scripting/evaluate`,body:{script_text:t,mock_type:"cron",timeout:r},headers:{"X-Key":o,Accept:"*/*"}};this.post(a,(t,e,i)=>s(i))}).catch(t=>this.logErr(t))}loaddata(){if(!this.isNode())return{};{this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),e=this.path.resolve(process.cwd(),this.dataFile),s=this.fs.existsSync(t),i=!s&&this.fs.existsSync(e);if(!s&&!i)return{};{const i=s?t:e;try{return JSON.parse(this.fs.readFileSync(i))}catch(t){return{}}}}}writedata(){if(this.isNode()){this.fs=this.fs?this.fs:require("fs"),this.path=this.path?this.path:require("path");const t=this.path.resolve(this.dataFile),e=this.path.resolve(process.cwd(),this.dataFile),s=this.fs.existsSync(t),i=!s&&this.fs.existsSync(e),r=JSON.stringify(this.data);s?this.fs.writeFileSync(t,r):i?this.fs.writeFileSync(e,r):this.fs.writeFileSync(t,r)}}lodash_get(t,e,s){const i=e.replace(/\[(\d+)\]/g,".$1").split(".");let r=t;for(const t of i)if(r=Object(r)[t],void 0===r)return s;return r}lodash_set(t,e,s){return Object(t)!==t?t:(Array.isArray(e)||(e=e.toString().match(/[^.[\]]+/g)||[]),e.slice(0,-1).reduce((t,s,i)=>Object(t[s])===t[s]?t[s]:t[s]=Math.abs(e[i+1])>>0==+e[i+1]?[]:{},t)[e[e.length-1]]=s,t)}getdata(t){let e=this.getval(t);if(/^@/.test(t)){const[,s,i]=/^@(.*?)\.(.*?)$/.exec(t),r=s?this.getval(s):"";if(r)try{const t=JSON.parse(r);e=t?this.lodash_get(t,i,""):e}catch(t){e=""}}return e}setdata(t,e){let s=!1;if(/^@/.test(e)){const[,i,r]=/^@(.*?)\.(.*?)$/.exec(e),o=this.getval(i),h=i?"null"===o?null:o||"{}":"{}";try{const e=JSON.parse(h);this.lodash_set(e,r,t),s=this.setval(JSON.stringify(e),i)}catch(e){const o={};this.lodash_set(o,r,t),s=this.setval(JSON.stringify(o),i)}}else s=this.setval(t,e);return s}getval(t){return this.isSurge()||this.isLoon()?$persistentStore.read(t):this.isQuanX()?$prefs.valueForKey(t):this.isNode()?(this.data=this.loaddata(),this.data[t]):this.data&&this.data[t]||null}setval(t,e){return this.isSurge()||this.isLoon()?$persistentStore.write(t,e):this.isQuanX()?$prefs.setValueForKey(t,e):this.isNode()?(this.data=this.loaddata(),this.data[e]=t,this.writedata(),!0):this.data&&this.data[e]||null}initGotEnv(t){this.got=this.got?this.got:require("got"),this.cktough=this.cktough?this.cktough:require("tough-cookie"),this.ckjar=this.ckjar?this.ckjar:new this.cktough.CookieJar,t&&(t.headers=t.headers?t.headers:{},void 0===t.headers.Cookie&&void 0===t.cookieJar&&(t.cookieJar=this.ckjar))}get(t,e=(()=>{})){t.headers&&(delete t.headers["Content-Type"],delete t.headers["Content-Length"]),this.isSurge()||this.isLoon()?(this.isSurge()&&this.isNeedRewrite&&(t.headers=t.headers||{},Object.assign(t.headers,{"X-Surge-Skip-Scripting":!1})),$httpClient.get(t,(t,s,i)=>{!t&&s&&(s.body=i,s.statusCode=s.status),e(t,s,i)})):this.isQuanX()?(this.isNeedRewrite&&(t.opts=t.opts||{},Object.assign(t.opts,{hints:!1})),$task.fetch(t).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>e(t))):this.isNode()&&(this.initGotEnv(t),this.got(t).on("redirect",(t,e)=>{try{if(t.headers["set-cookie"]){const s=t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString();this.ckjar.setCookieSync(s,null),e.cookieJar=this.ckjar}}catch(t){this.logErr(t)}}).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>{const{message:s,response:i}=t;e(s,i,i&&i.body)}))}post(t,e=(()=>{})){if(t.body&&t.headers&&!t.headers["Content-Type"]&&(t.headers["Content-Type"]="application/x-www-form-urlencoded"),t.headers&&delete t.headers["Content-Length"],this.isSurge()||this.isLoon())this.isSurge()&&this.isNeedRewrite&&(t.headers=t.headers||{},Object.assign(t.headers,{"X-Surge-Skip-Scripting":!1})),$httpClient.post(t,(t,s,i)=>{!t&&s&&(s.body=i,s.statusCode=s.status),e(t,s,i)});else if(this.isQuanX())t.method="POST",this.isNeedRewrite&&(t.opts=t.opts||{},Object.assign(t.opts,{hints:!1})),$task.fetch(t).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>e(t));else if(this.isNode()){this.initGotEnv(t);const{url:s,...i}=t;this.got.post(s,i).then(t=>{const{statusCode:s,statusCode:i,headers:r,body:o}=t;e(null,{status:s,statusCode:i,headers:r,body:o},o)},t=>{const{message:s,response:i}=t;e(s,i,i&&i.body)})}}time(t){let e={"M+":(new Date).getMonth()+1,"d+":(new Date).getDate(),"H+":(new Date).getHours(),"m+":(new Date).getMinutes(),"s+":(new Date).getSeconds(),"q+":Math.floor(((new Date).getMonth()+3)/3),S:(new Date).getMilliseconds()};/(y+)/.test(t)&&(t=t.replace(RegExp.$1,((new Date).getFullYear()+"").substr(4-RegExp.$1.length)));for(let s in e)new RegExp("("+s+")").test(t)&&(t=t.replace(RegExp.$1,1==RegExp.$1.length?e[s]:("00"+e[s]).substr((""+e[s]).length)));return t}msg(e=t,s="",i="",r){const o=t=>{if(!t)return t;if("string"==typeof t)return this.isLoon()?t:this.isQuanX()?{"open-url":t}:this.isSurge()?{url:t}:void 0;if("object"==typeof t){if(this.isLoon()){let e=t.openUrl||t.url||t["open-url"],s=t.mediaUrl||t["media-url"];return{openUrl:e,mediaUrl:s}}if(this.isQuanX()){let e=t["open-url"]||t.url||t.openUrl,s=t["media-url"]||t.mediaUrl;return{"open-url":e,"media-url":s}}if(this.isSurge()){let e=t.url||t.openUrl||t["open-url"];return{url:e}}}};this.isMute||(this.isSurge()||this.isLoon()?$notification.post(e,s,i,o(r)):this.isQuanX()&&$notify(e,s,i,o(r)));let h=["","==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="];h.push(e),s&&h.push(s),i&&h.push(i),console.log(h.join("\n")),this.logs=this.logs.concat(h)}log(...t){t.length>0&&(this.logs=[...this.logs,...t]),console.log(t.join(this.logSeparator))}logErr(t,e){const s=!this.isSurge()&&!this.isQuanX()&&!this.isLoon();s?this.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t.stack):this.log("",`\u2757\ufe0f${this.name}, \u9519\u8bef!`,t)}wait(t){return new Promise(e=>setTimeout(e,t))}done(t={}){const e=(new Date).getTime(),s=(e-this.startTime)/1e3;this.log("",`\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${s} \u79d2`),this.log(),(this.isSurge()||this.isQuanX()||this.isLoon())&&$done(t)}}(t,e)}
